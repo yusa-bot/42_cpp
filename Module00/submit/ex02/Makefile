@@ -22,7 +22,7 @@ clean:
 fclean: clean
 	rm -f $(NAME)
 
-re: fclaen all
+re: fclean all
 
 -include $(DEPS)
 
