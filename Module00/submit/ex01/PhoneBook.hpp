@@ -25,7 +25,6 @@ public:
 //-> PhoneBookで処理をしつつ、個々のContactはContactで処理。
 //(Contact自体はPhoneBookがインスタンスを保持)
 
-
 //////
 
 //private : メンバ関数からのみアクセス -> 値の整合性を保つ

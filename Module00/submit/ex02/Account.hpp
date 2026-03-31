@@ -52,7 +52,6 @@ public:
 	// 銀行全体の総情報
 	static void	displayAccountsInfos( void );
 
-	// インスタンスメンバ(関数) - 個々の口座の情報を管理する部分
 	// コンストラクタ - 新しい口座を作成, インデックスを割り当て、全体の口座数と総額を更新
 	Account( int initial_deposit );
 	// デストラクタ
@@ -73,6 +72,5 @@ public:
 // -*- mode: c++-mode;                                                       -*-
 // -*- fill-column: 75; comment-column: 75;                                  -*-
 // ************************************************************************** //
-
 
 #endif

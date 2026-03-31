@@ -46,7 +46,7 @@ bool Contact::init() {
     for (int i = 0; i < 5; ++i) {
         input[i] = "";
 
-        // 空の入力を弾く（スペースのみの入力も防ぐ場合はさらに工夫が必要ですが、ここでは長さで判定）
+        // 空の入力を弾く
         while (input[i].empty()) {
             std::cout << prompts[i];
 

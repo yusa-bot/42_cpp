@@ -23,5 +23,5 @@ int main(int argc, char **argv) {
     return 0;
 }
 
-//Megaphone::Megaphone() {}がない
+//コンストラクタがない
 //-> コンパイラが自動的に中身が空のデフォルトコンストラクタを勝手に作る
