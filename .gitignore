@@ -1,4 +1,6 @@
 **/*.o
 **/*.d
+**/.DS_Store
+.devcontainer/**
 
 #valgrind --leak-check=full --show-leak-kinds=all ./harlFilter "WARNING"
