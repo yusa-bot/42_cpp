@@ -5,9 +5,6 @@
 #include "Zombie.hpp"
 #include <iostream>
 
-// コンストラクタ
-Zombie::Zombie(std::string name) : name(name) {}
-
 // デストラクタ
 // デバッグ目的でゾンビの名前を含むメッセージを出力する必要
 Zombie::~Zombie(void) {
@@ -21,4 +18,8 @@ Zombie::~Zombie(void) {
 //ゾンビは次のように自己紹介します： <name>: BraiiiiiiinnnzzzZ...
 void Zombie::announce( void ) {
     std::cout << this->name << ": BraiiiiiiinnnzzzZ..." << std::endl;
+}
+
+void Zombie::setName(std::string name) {
+    this->name = name;
 }

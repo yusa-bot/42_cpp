@@ -1,26 +1,30 @@
+#ifndef ZOMBIE_HPP
+# define ZOMBIE_HPP
+
+# include <string>
+
 class Zombie {
 
 private:
 	std::string name;
 
-	void announce( void );
-
-	// この関数はゾンビを作成し、名前を付け、自分自身をアナウンスさせます
-	void randomChump( std::string name );
-
 public:
-	Zombie();
+	Zombie(std::string name);
 	// デストラクタは、デバッグ目的でゾンビの名前を含むメッセージを出力する必要
 	~Zombie();
 
-	// この関数はゾンビを作成し、名前を付け、関数のスコープ外でも使用できるようにそれを返します。
-	Zombie* newZombie( std::string name );
+	void announce( void );
+};
 
-}
+// この関数はゾンビを作成し、名前を付け、関数のスコープ外でも使用できるようにそれを返します。
+// new -> Heap: 関数のスコープ外でも使用 -> delete
+Zombie* newZombie( std::string name );
 
-// Foo: BraiiiiiiinnnzzzZ...
+// この関数はゾンビを作成し、名前を付け、自分自身をアナウンスさせます(announce())
+// Stack: 関数の中だけ->消滅
+void randomChump( std::string name );
 
-ゾンビをスタック上に割り当てるべきか、
-ヒープ上に割り当てるべきかを判断する必要
+#endif
 
-ゾンビは不要になった時点で破棄
+//ゾンビをスタック上に割り当てるべきか、ヒープ上に割り当てるべきかを判断する必要
+//ゾンビは不要になった時点で破棄

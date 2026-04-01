@@ -1,9 +1,9 @@
-NAME = zombie
+NAME = zombieHorde
 CXX = c++
 CXXFLAGS = -Wall  -Wextra -Werror -pedantic -std=c++98
 DEPFLAGS = -MMD -MP
 
-SRCS = main.cpp Zombie.cpp newZombie.cpp randomChump.cpp
+SRCS = main.cpp Zombie.cpp zombieHorde.cpp
 
 OBJS = $(SRCS:.cpp=.o)
 DEPS = $(SRCS:.cpp=.d)
