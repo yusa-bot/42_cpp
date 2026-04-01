@@ -1,2 +1,4 @@
 **/*.o
 **/*.d
+
+#valgrind --leak-check=full --show-leak-kinds=all ./harlFilter "WARNING"
