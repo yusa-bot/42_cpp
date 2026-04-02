@@ -1,0 +1,64 @@
+#include "Animal.hpp"
+#include "Dog.hpp"
+#include "Cat.hpp"
+#include <iostream>
+
+int main()
+{
+    std::cout << "===== 抽象クラスのインスタンス化テスト =====" << std::endl;
+
+    // 以下の行のコメントアウトを外すとコンパイルエラーになることが確認できます。
+    // "Cannot declare variable 'test' to be of abstract type 'Animal'"
+    // Animal test;
+
+    // こちらも同様にコンパイルエラーになります。
+    // "Cannot allocate an object of abstract type 'Animal'"
+    // const Animal* meta = new Animal();
+
+    std::cout << "Animalは抽象クラス（純粋仮想関数を持つ）のため、インスタンス化できません。" << std::endl;
+    std::cout << "※コード内でコンパイルエラーになる部分はコメントアウトしています。\n" << std::endl;
+
+    std::cout << "\n\n===== Animal配列のテスト =====" << std::endl;
+    const int arraySize = 4;
+    Animal* animals[arraySize];
+
+    std::cout << "\n--- 配列への格納（前半Dog, 後半Cat） ---" << std::endl;
+    for (int k = 0; k < arraySize; k++) {
+        if (k < arraySize / 2) {
+            animals[k] = new Dog();
+        } else {
+            animals[k] = new Cat();
+        }
+    }
+
+    std::cout << "\n--- 配列要素の削除（Animalポインタからの直接削除） ---" << std::endl;
+
+    for (int k = 0; k < arraySize; k++) {
+        delete animals[k];
+    }
+
+    std::cout << "\n\n===== ディープコピーのテスト =====" << std::endl;
+    // ブロックスコープ {} を利用してディープコピーを検証します。
+    // シャローコピーの場合、スコープを抜ける際のデストラクタで同じBrainのメモリが
+    // 2回解放されようとし（ダブルフリー）、プログラムがクラッシュします。
+
+    std::cout << "\n--- Dogのコピーコンストラクタのテスト ---" << std::endl;
+    Dog originalDog;
+    {
+        Dog copyDog = originalDog; // コピーコンストラクタ
+    }
+    std::cout << "-> ブロックスコープ終了。シャローコピーならここでクラッシュするか、次の削除でクラッシュします。" << std::endl;
+
+    std::cout << "\n--- Catの代入演算子のテスト ---" << std::endl;
+    Cat originalCat;
+    {
+        Cat assignCat;
+        assignCat = originalCat; // コピー代入演算子
+    }
+    std::cout << "-> ブロックスコープ終了。クラッシュしなければディープコピー成功です。" << std::endl;
+
+    std::cout << "\n--- main関数の終了 ---" << std::endl;
+
+    // originalDog と originalCat のデストラクタが最後に呼ばれる
+    return 0;
+}

@@ -1,0 +1,113 @@
+C++98（C++20でも）にはインターフェースは存在しません。しかし、純粋な抽象クラスは一般的にインターフェースと呼ばれます。そこで、この最後の演習では、このモジュールを理解していることを確認するために、インターフェースを実装してみましょう。
+以下のAMateriaクラスの定義を完成させ、必要なメンバ関数を実装してください。
+
+class AMateria
+{
+	protected:
+		[...]
+
+	public:
+		AMateria(std::string const & type);
+		[...]
+		
+		std::string const & getType() const; //Returns the materia type
+		virtual AMateria* clone() const = 0;
+		virtual void use(ICharacter& target);
+}
+
+マテリアの具象クラス「Ice」と「Cure」を実装してください。型を設定する際は、クラス名を小文字（Iceは「ice」、Cureは「cure」）で表記してください。もちろん、メンバ関数
+clone() は同じ型の新しいインスタンスを返します（つまり、Iceマテリアをクローンすると、
+新しいIceマテリアが生成されます）。
+
+メンバ関数 use(ICharacter&) は以下のように表示します。
+• Ice: "* <name>に氷のボルトを発射します *"
+• Cure: "* <name>の傷を癒します *"
+<name>はパラメータとして渡されるキャラクター名です。山括弧（<と>）は表示しないでください。
+
+あるマテリアを別のマテリアに割り当てる場合、型をコピーしても意味がありません。
+
+以下のインターフェースを実装する具象クラス「Character」を作成してください。
+
+class ICharacter
+{
+	public:
+	virtual ~ICharacter() {}
+	virtual std::string const & getName() const = 0;
+	virtual void equip(AMateria* m) = 0;
+	virtual void unequip(int idx) = 0;
+	virtual void use(int idx, ICharacter& target) = 0;
+};
+
+キャラクターは4つのスロットを持つインベントリを所有しており、これは最大4つのマテリアを所持できることを意味します。
+
+インベントリは作成時に空いています。キャラクターは最初に見つけた空いているスロットに、スロット0からスロット3の順にマテリアを装備します。
+インベントリが満杯の状態でマテリアを追加しようとしたり、存在しないマテリアを使用/装備解除しようとしたりしても、何も起こりません（ただし、バグは禁止されています）。
+`unequip()`メンバ関数はマテリアを削除してはなりません。
+
+キャラクターが床に落としたマテリアは自由に処理してください。
+
+`unequip()`などの呼び出しを行う前にアドレスを保存してください。ただし、
+メモリリークが発生しないように注意してください。
+
+`use(int, ICharacter&)`メンバ関数は、`slot[idx]`にあるマテリアを使用し、ターゲットパラメータを`AMateria::use`関数に渡す必要があります。
+
+キャラクターのインベントリは、あらゆる種類のマテリアをサポートする必要があります。
+
+キャラクターには、名前をパラメータとして受け取るコンストラクタが必要です。
+キャラクターのコピー（コピーコンストラクタまたはコピー代入演算子を使用）は、ディープコピーである必要があります。
+
+コピー時には、新しいマテリアがインベントリに追加される前に、キャラクターのマテリアを削除する必要があります。
+もちろん、キャラクターが破壊されたときにもマテリアは削除されなければなりません。
+
+以下のインターフェースを実装する具象クラス MateriaSource を作成してください。
+
+class IMateriaSource
+{
+	public:
+	virtual ~IMateriaSource() {}
+	virtual void learnMateria(AMateria*) = 0;
+	virtual AMateria* createMateria(std::string const & type) = 0;
+};
+
+learnMateria(AMateria*)
+パラメータとして渡されたマテリアをコピーし、メモリに保存して後で複製できるようにします。
+キャラクターと同様に、MateriaSourceは最大4つのマテリアを記憶できます。
+それらは必ずしも一意である必要はありません。
+
+• createMateria(std::string const &)
+新しいマテリアを返します。これは、MateriaSourceが以前に学習したマテリアのコピーであり、
+パラメータとして渡されたマテリアと同じタイプです。
+タイプが不明な場合は0を返します。
+
+要するに、MateriaSourceは、必要に応じてマテリアを作成するために、マテリアの「テンプレート」を学習できる必要があります。
+そうすれば、
+マテリアのタイプを識別する文字列だけで新しいマテリアを生成できるようになります。
+
+Running this code:
+int main()
+{
+	IMateriaSource* src = new MateriaSource();
+	src->learnMateria(new Ice());
+	src->learnMateria(new Cure());
+	ICharacter* me = new Character("me");
+	AMateria* tmp;
+	tmp = src->createMateria("ice");
+	me->equip(tmp);
+	tmp = src->createMateria("cure");
+	me->equip(tmp);
+	ICharacter* bob = new Character("bob");
+	me->use(0, *bob);
+	me->use(1, *bob);
+	delete bob;
+	delete me;
+	delete src;
+	return 0;
+}
+
+Should output:
+$> clang++ -W -Wall -Werror *.cpp
+$> ./a.out | cat -e
+* shoots an ice bolt at bob *$
+* heals bob's wounds *$
+
+いつものように、上記に示されたテスト以外にも、さらに多くのテストを実装して提出してください。
