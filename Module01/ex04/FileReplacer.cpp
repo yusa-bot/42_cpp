@@ -42,7 +42,7 @@ int FileReplacer::execute() const {
     std::ifstream ifs(_filename.c_str());
 
     if (!ifs.is_open()) {
-        std::cerr << "Error: Cannot open file " << _filename << std::endl;
+        std::cout << "Error: Cannot open file " << _filename << std::endl;
         return 1;
     }
 
@@ -50,7 +50,7 @@ int FileReplacer::execute() const {
     std::ofstream ofs((_filename + ".replace").c_str());
 
     if (!ofs.is_open()) {
-        std::cerr << "Error: Cannot create output file." << std::endl;
+        std::cout << "Error: Cannot create output file." << std::endl;
         return 1;
     }
 
