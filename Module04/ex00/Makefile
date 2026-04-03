@@ -1,6 +1,6 @@
 NAME = Animal
 CXX = c++
-CXXFLAGS = -Wall  -Wextra -Werror -pedantic -std=c++98
+CXXFLAGS = -Wall -Wextra -Werror -pedantic -std=c++98
 DEPFLAGS = -MMD -MP
 
 SRCS = main.cpp Animal.cpp Dog.cpp Cat.cpp WrongAnimal.cpp WrongCat.cpp
