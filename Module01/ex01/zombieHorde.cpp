@@ -14,6 +14,3 @@ Zombie* zombieHorde( int N, std::string name ) {
 
     return horde;
 }
-
-// 複数要素(配列)のインスタンスはコンストラクタを呼ぶ時に引数(name)を指定できない
-// -> 空のデフォルトコンストラクタ -> メンバ関数setName()

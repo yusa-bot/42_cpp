@@ -3,6 +3,8 @@
 
 # include <string>
 
+// stack, heap の違い
+
 class Zombie {
 
 private:
@@ -10,8 +12,7 @@ private:
 
 public:
 	Zombie(std::string name);
-	// デストラクタは、デバッグ目的でゾンビの名前を含むメッセージを出力する必要
-	~Zombie();
+	~Zombie(); // デストラクタは、デバッグ目的でゾンビの名前を含むメッセージを出力する必要
 
 	void announce( void );
 };
@@ -25,6 +26,3 @@ Zombie* newZombie( std::string name );
 void randomChump( std::string name );
 
 #endif
-
-//ゾンビをスタック上に割り当てるべきか、ヒープ上に割り当てるべきかを判断する必要
-//ゾンビは不要になった時点で破棄

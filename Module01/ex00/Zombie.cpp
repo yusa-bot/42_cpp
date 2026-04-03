@@ -1,15 +1,14 @@
+#include "Zombie.hpp"
+#include <iostream>
+
 // -----------------------------------------------------------------------------
 // OCF
 // -----------------------------------------------------------------------------
-
-#include "Zombie.hpp"
-#include <iostream>
 
 // コンストラクタ
 Zombie::Zombie(std::string name) : name(name) {}
 
 // デストラクタ
-// デバッグ目的でゾンビの名前を含むメッセージを出力する必要
 Zombie::~Zombie(void) {
     std::cout << this->name << " is destroyed." << std::endl;
 }

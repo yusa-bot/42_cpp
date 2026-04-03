@@ -3,6 +3,8 @@
 
 # include <string>
 
+// replace再実装. cppの関数の使い方を知る
+
 class FileReplacer {
 
 private:

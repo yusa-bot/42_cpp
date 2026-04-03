@@ -1,6 +1,8 @@
 #include <string>
 #include <iostream>
 
+// 参照の基礎を学ぶex
+
 int main() {
     std::string str = "HI THIS IS BRAIN";
 

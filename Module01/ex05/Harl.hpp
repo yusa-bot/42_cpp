@@ -3,6 +3,8 @@
 
 # include <string>
 
+// 関数ポインタ
+
 class Harl {
 
 private:

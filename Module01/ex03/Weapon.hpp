@@ -3,6 +3,8 @@
 
 # include <string>
 
+// 参照とポインタの違いを学ぶex
+
 // typeを保持,操作する
 class Weapon {
 
