@@ -3,6 +3,7 @@
 
 # include <iostream>
 
+// ex00に変換機能(float, 整数と固定小数点数の違いを理解), <<オーバーロードを追加
 class Fixed {
 
 private:

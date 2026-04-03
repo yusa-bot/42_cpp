@@ -1,6 +1,8 @@
 #ifndef FIXED_HPP
 # define FIXED_HPP
 
+// 固定小数点数を通してOCFを理解する (Fixedでもintなどと同じように、数値を扱えるようにする)
+
 class Fixed {
 
 private:
@@ -10,7 +12,7 @@ private:
 	static const int    _fractionalBits = 8;
 
 public:
-	// OCF: Fixedでもintなどと同じように、数値を扱えるようにするため
+	// OCF
 	// デフォルトコンストラクタ
 	Fixed();
 	// コピーコンストラクタ
