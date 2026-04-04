@@ -15,6 +15,7 @@ int main()
 	std::cout << j->getType() << " " << std::endl;
 	std::cout << i->getType() << " " << std::endl;
 
+	// 動的多態性: 継承と仮想関数を組み合わせ、実体を決定する。
 	i->makeSound();
 	j->makeSound();
 	meta->makeSound();

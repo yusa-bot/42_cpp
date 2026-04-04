@@ -3,6 +3,8 @@
 
 # include <string>
 
+// Virtualなしの挙動を確認
+
 class WrongAnimal {
 
 protected:

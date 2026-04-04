@@ -21,6 +21,9 @@ int main()
     std::cout << "\n--- 配列要素の削除（Animalポインタからの直接削除） ---" << std::endl;
 
     for (int k = 0; k < arraySize; k++) {
+        // virtual ~Animal();のため、vptrを辿り実体(cat, dog)を消す -> Animalを消す
+        // 利点: 継承元の型(Animal*)で統一して処理できる。
+            // (「消し方」のルールはそれぞれのクラス（Dog/Cat）に封じ込められており、実行時にvptrがvtableのアドレスを正しく呼び出す)
         delete animals[k];
     }
 
@@ -45,7 +48,7 @@ int main()
     std::cout << "-> ブロックスコープ終了。クラッシュしなければディープコピー成功です。" << std::endl;
 
     std::cout << "\n--- main関数の終了 ---" << std::endl;
-	
+
     // originalDog と originalCat のデストラクタが最後に呼ばれる
     return 0;
 }

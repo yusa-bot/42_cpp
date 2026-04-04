@@ -3,6 +3,8 @@
 
 # include <string>
 
+// Animalをインスタンス化しない
+
 class Animal {
 
 protected:

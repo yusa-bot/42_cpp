@@ -3,6 +3,8 @@
 
 # include <string>
 
+// Virtualの動的結合
+
 class Animal {
 
 protected:
@@ -15,7 +17,7 @@ public:
     Animal& operator=(const Animal& rhs);
 	virtual ~Animal(); // Vtableが指す別のデストラクタを実行
 
-	virtual void makeSound() const;
+	virtual void makeSound() const; // 仮想関数
 	std::string getType() const;
 };
 
@@ -30,3 +32,4 @@ public:
 //	1. Vtableを親/子ともに持つ
 //	2. インスタンス生成時、Vptr(Vtableのptr)を持つ
 //	3. 実行時、インスタンスのVptrを辿り、Dog 用の Vtable を参照しアドレスを特定して実行
+

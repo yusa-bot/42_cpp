@@ -3,6 +3,8 @@
 
 # include <string>
 
+// Animalを継承してBrainを持つ, シャローコピー/ディープコピー
+
 class Animal {
 
 protected:
@@ -16,7 +18,6 @@ public:
 	virtual ~Animal();
 
 	virtual void makeSound() const;
-	
 	std::string getType() const;
 };
 
