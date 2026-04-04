@@ -1,0 +1,4 @@
+ex00/
+g ruleに則ってない (class nameがfile nameではない)
+
+なるべくcharではなくstringを使う

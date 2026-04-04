@@ -4,6 +4,8 @@
 # include <string>
 # include <iostream>
 
+// 継承元
+
 class ClapTrap {
 
 private:
@@ -23,7 +25,6 @@ public:
 	void attack(const std::string& target);
 	void takeDamage(unsigned int amount);
 	void beRepaired(unsigned int amount);
-
 };
 
 #endif

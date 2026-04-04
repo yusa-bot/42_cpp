@@ -4,6 +4,8 @@
 # include <string>
 # include <iostream>
 
+// 継承クラス作成 (ex01とほぼ同じ)
+
 class ClapTrap {
 
 protected:
