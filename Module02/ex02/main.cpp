@@ -4,7 +4,7 @@
 int main( void ) {
 	Fixed a;
 
-	 <<8で整数に -> roundf -> *ではtoFloat() -> <<でtoFloat() -> std::cout有効数字6桁のため四捨五入
+	// <<8で整数に -> roundf -> *ではtoFloat() -> <<でtoFloat() -> std::cout有効数字6桁のため四捨五入
 	Fixed const b( Fixed( 5.05f ) * Fixed( 2 ) );
 
 	std::cout << a << std::endl;
@@ -22,6 +22,7 @@ int main( void ) {
 
 	//std::cout << a2 << std::endl;
 	//std::cout << b2 << std::endl;
+
 	//std::cout << result << std::endl;
 
 	return 0;
