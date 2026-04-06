@@ -25,7 +25,7 @@ ScavTrap::ScavTrap(const ScavTrap& src) : ClapTrap(src) {
     std::cout << "ScavTrap Copy constructor called" << std::endl;
 }
 
-// Copy constructorはClapTrapのものを使うためCopy assignment operatoは呼ばないが、代入操作で使用
+// Copy constructorはClapTrapのものを使うためCopy assignment operatorは呼ばないが、代入操作で使用
 ScavTrap& ScavTrap::operator=(const ScavTrap& rhs) {
 	std::cout << "ScavTrap Copy assignment operator called" << std::endl;
     if (this != &rhs) {
