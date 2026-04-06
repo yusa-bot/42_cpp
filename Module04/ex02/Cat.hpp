@@ -12,7 +12,6 @@ private:
 public:
 	// OCF
 	Cat();
-	Cat(const std::string& type);
 	Cat(const Cat& src);
 	Cat& operator=(const Cat& rhs);
     ~Cat();

@@ -8,7 +8,6 @@ class Dog: public Animal {
 public:
 	// OCF
 	Dog();
-	Dog(const std::string& type);
 	Dog(const Dog& src);
 	Dog& operator=(const Dog& rhs);
     ~Dog();
