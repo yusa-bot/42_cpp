@@ -1,0 +1,19 @@
+
+飛べる設定
+vscode 色
+
+neo vim
+zig
+trpc
+-O3
+$(RM)
+
+RTTI
+down cast / up cast
+
+"": \0
+ptrに0 = NULL = nullptr
+
+初期化子リスト
+
+
