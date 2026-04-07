@@ -27,10 +27,11 @@ Cat& Cat::operator=(const Cat& rhs) {
         Animal::operator=(rhs); // _brain以外は親でcopy
 
         // 古い Brain を破棄し、新しい Brain を確保してコピーする
-        if (this->_brain) {
-            delete this->_brain;
-        }
-        this->_brain = new Brain(*(rhs._brain));
+        Brain* tmp = new Brain(*(rhs._brain));
+        // new失敗時、std::bad_allocという例外をスロー
+        // -> delete を実行する前に例外で関数を抜けるため、元のメモリは解放されず、ポインタも有効 (元の_brainのまま)
+        delete this->_brain;
+        this->_brain = tmp;
     }
     return *this;
 }
