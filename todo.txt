@@ -1,6 +1,5 @@
 
 飛べる設定
-vscode 色
 
 neo vim
 zig
