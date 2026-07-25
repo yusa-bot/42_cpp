@@ -8,8 +8,7 @@
 class AForm;
 
 // Key Point
-// 抽象基底クラスと純粋仮想関数によるポリモーフィズム。
-// AForm が共通チェックを担当し、派生クラスが固有処理を実装する。
+// 生成処理を Intern に集約
 
 class Bureaucrat {
 
