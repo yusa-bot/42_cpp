@@ -1,23 +1,6 @@
 
 
--O3
-$(RM)
-https://projects.intra.42.fr/projects/cpp-module-03/projects_users/4923216
-
--------
-
-飛べる設定
-
-neo vim
-zig
-trpc
-
-RTTI
-down cast / up cast
-
 "": \0
 ptrに0 = NULL = nullptr
-
-初期化子リスト
 
 
