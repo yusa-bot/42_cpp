@@ -20,7 +20,7 @@ ex00〜ex03 の必須ファイルが存在し、全 exercise が `-Wall -Wextra 
 - **Status**: PASS
 - **Evidence/Test Command**:
   ```sh
-  cd ~/workspace/42tokyo/cpp-module/cpp-module--ayusa/Module05
+  cd ~/42_cpp/Module05
   grep -rEn "printf|[mcr]alloc|free\(|using[[:space:]]+namespace|friend" ex00 ex01 ex02 ex03 --include="*.cpp" --include="*.hpp"
   grep -rEn "#include[[:space:]]*<(vector|list|map|set|deque|algorithm|queue|stack|array|unordered_|tuple)" ex00 ex01 ex02 ex03 --include="*.cpp" --include="*.hpp"
   grep -rEn "nullptr|\boverride\b|\bfinal\b|constexpr|std::move|decltype|<chrono>|<thread>|<mutex>|<atomic>|<random>|<regex>" ex00 ex01 ex02 ex03 --include="*.cpp" --include="*.hpp"
@@ -34,10 +34,10 @@ ex00〜ex03 の必須ファイルが存在し、全 exercise が `-Wall -Wextra 
 - **Status**: PASS
 - **Evidence/Test Command**:
   ```sh
-  cd ~/workspace/42tokyo/cpp-module/cpp-module--ayusa/Module05/ex00 && make && ./Bureaucrat >/dev/null; echo run=$?; make re && make fclean
-  cd ~/workspace/42tokyo/cpp-module/cpp-module--ayusa/Module05/ex01 && make && ./Form >/dev/null; echo run=$?; make re && make fclean
-  cd ~/workspace/42tokyo/cpp-module/cpp-module--ayusa/Module05/ex02 && make && ./AForm >/dev/null; echo run=$?; rm -f garden_shrubbery; make re && make fclean
-  cd ~/workspace/42tokyo/cpp-module/cpp-module--ayusa/Module05/ex03 && make && ./Intern >/dev/null; echo run=$?; rm -f garden_shrubbery; make re && make fclean
+  cd ~/42_cpp/Module05/ex00 && make && ./Bureaucrat >/dev/null; echo run=$?; make re && make fclean
+  cd ~/42_cpp/Module05/ex01 && make && ./Form >/dev/null; echo run=$?; make re && make fclean
+  cd ~/42_cpp/Module05/ex02 && make && ./AForm >/dev/null; echo run=$?; rm -f garden_shrubbery; make re && make fclean
+  cd ~/42_cpp/Module05/ex03 && make && ./Intern >/dev/null; echo run=$?; rm -f garden_shrubbery; make re && make fclean
   ```
 - **Observation**: 全 exercise でビルドと実行は exit 0。各 Makefile の CXX は `c++`、CXXFLAGS は `-Wall -Wextra -Werror -pedantic -std=c++98 -O3` (`ex00/Makefile:2-3`, `ex01/Makefile:2-3`, `ex02/Makefile:2-3`, `ex03/Makefile:2-3`)。`re` は `fclean all` (`ex00/Makefile:25`, `ex01/Makefile:25`, `ex02/Makefile:26`, `ex03/Makefile:26`)。コンパイル警告 0。
 
@@ -54,7 +54,7 @@ ex00〜ex03 の必須ファイルが存在し、全 exercise が `-Wall -Wextra 
 - **Status**: PASS
 - **Evidence/Test Command**:
   ```sh
-  cd ~/workspace/42tokyo/cpp-module/cpp-module--ayusa/Module05/ex00 && make && ./Bureaucrat; make fclean
+  cd ~/42_cpp/Module05/ex00 && make && ./Bureaucrat; make fclean
   ```
 - **Observation**:
   - 定数 name は `ex00/Bureaucrat.hpp:17`、grade は `ex00/Bureaucrat.hpp:18`。
@@ -71,7 +71,7 @@ ex00〜ex03 の必須ファイルが存在し、全 exercise が `-Wall -Wextra 
 - **Status**: PASS
 - **Evidence/Test Command**:
   ```sh
-  cd ~/workspace/42tokyo/cpp-module/cpp-module--ayusa/Module05/ex01 && make && ./Form; make fclean
+  cd ~/42_cpp/Module05/ex01 && make && ./Form; make fclean
   ```
 - **Observation**:
   - 全属性は private (`ex01/Form.hpp:11-15`)。name と grade 2 個は const、signed は bool。signed 初期値 false (`ex01/Form.cpp:9-11,28-29`)。
@@ -88,9 +88,9 @@ ex00〜ex03 の必須ファイルが存在し、全 exercise が `-Wall -Wextra 
 - **Status**: PASS
 - **Evidence/Test Command**:
   ```sh
-  cd ~/workspace/42tokyo/cpp-module/cpp-module--ayusa/Module05/ex02 && make && ./AForm; rm -f garden_shrubbery; make fclean
-  mkdir -p /tmp/Module05_review && cd ~/workspace/42tokyo/cpp-module/cpp-module--ayusa/Module05/ex02 && c++ -Wall -Wextra -Werror -std=c++98 -I. ~/workspace/42tokyo/cpp-module/cpp-module--ayusa/Module05/outputs/artifacts/tests/boundary_ex02.cpp Bureaucrat.cpp AForm.cpp ShrubberyCreationForm.cpp RobotomyRequestForm.cpp PresidentialPardonForm.cpp -o /tmp/Module05_review/boundary_ex02 && cd /tmp/Module05_review && ./boundary_ex02
-  cd ~/workspace/42tokyo/cpp-module/cpp-module--ayusa/Module05/ex02 && c++ -Wall -Wextra -Werror -std=c++98 -I. ~/workspace/42tokyo/cpp-module/cpp-module--ayusa/Module05/outputs/artifacts/tests/abstract_test.cpp AForm.cpp -o /tmp/Module05_review/abstract_test
+  cd ~/42_cpp/Module05/ex02 && make && ./AForm; rm -f garden_shrubbery; make fclean
+  mkdir -p /tmp/Module05_review && cd ~/42_cpp/Module05/ex02 && c++ -Wall -Wextra -Werror -std=c++98 -I. ~/42_cpp/Module05/outputs/artifacts/tests/boundary_ex02.cpp Bureaucrat.cpp AForm.cpp ShrubberyCreationForm.cpp RobotomyRequestForm.cpp PresidentialPardonForm.cpp -o /tmp/Module05_review/boundary_ex02 && cd /tmp/Module05_review && ./boundary_ex02
+  cd ~/42_cpp/Module05/ex02 && c++ -Wall -Wextra -Werror -std=c++98 -I. ~/42_cpp/Module05/outputs/artifacts/tests/abstract_test.cpp AForm.cpp -o /tmp/Module05_review/abstract_test
   ```
 - **Observation**:
   - AForm は `virtual void executeAction() const = 0` (`ex02/AForm.hpp:20`) を持つ。abstract_test は `error: variable type 'AForm' is an abstract class` と `unimplemented pure virtual method 'executeAction'` で意図どおりコンパイル失敗。
@@ -108,8 +108,8 @@ ex00〜ex03 の必須ファイルが存在し、全 exercise が `-Wall -Wextra 
 - **Status**: PASS
 - **Evidence/Test Command**:
   ```sh
-  cd ~/workspace/42tokyo/cpp-module/cpp-module--ayusa/Module05/ex03 && make && ./Intern; rm -f garden_shrubbery; make fclean
-  mkdir -p /tmp/Module05_review && cd ~/workspace/42tokyo/cpp-module/cpp-module--ayusa/Module05/ex03 && c++ -Wall -Wextra -Werror -std=c++98 -I. ~/workspace/42tokyo/cpp-module/cpp-module--ayusa/Module05/outputs/artifacts/tests/intern_ex03.cpp Bureaucrat.cpp AForm.cpp ShrubberyCreationForm.cpp RobotomyRequestForm.cpp PresidentialPardonForm.cpp Intern.cpp -o /tmp/Module05_review/intern_ex03 && /tmp/Module05_review/intern_ex03
+  cd ~/42_cpp/Module05/ex03 && make && ./Intern; rm -f garden_shrubbery; make fclean
+  mkdir -p /tmp/Module05_review && cd ~/42_cpp/Module05/ex03 && c++ -Wall -Wextra -Werror -std=c++98 -I. ~/42_cpp/Module05/outputs/artifacts/tests/intern_ex03.cpp Bureaucrat.cpp AForm.cpp ShrubberyCreationForm.cpp RobotomyRequestForm.cpp PresidentialPardonForm.cpp Intern.cpp -o /tmp/Module05_review/intern_ex03 && /tmp/Module05_review/intern_ex03
   ```
 - **Observation**:
   - 3 正常名で対応 form を生成し `Intern creates <form>` を出力 (`ex03/Intern.cpp:42-63`)。ハーネスで返却値 NON-NULL と各 grade 145/137, 72/45, 25/5 を確認。
@@ -122,8 +122,8 @@ ex00〜ex03 の必須ファイルが存在し、全 exercise が `-Wall -Wextra 
 - **Status**: PASS
 - **Evidence/Test Command**:
   ```sh
-  sed -n '42,67p' ~/workspace/42tokyo/cpp-module/cpp-module--ayusa/Module05/ex03/Intern.cpp
-  grep -nE "else[[:space:]]+if|elseif" ~/workspace/42tokyo/cpp-module/cpp-module--ayusa/Module05/ex03/Intern.cpp
+  sed -n '42,67p' ~/42_cpp/Module05/ex03/Intern.cpp
+  grep -nE "else[[:space:]]+if|elseif" ~/42_cpp/Module05/ex03/Intern.cpp
   ```
 - **Observation**: メンバ関数ポインタ型 `FormCreator`、form 名配列、creator 配列を同一 index で dispatch (`ex03/Intern.cpp:44-62`)。`else if`/`elseif` は一致 0 件。rubric の “array of pointers to member functions” を直接満たす。
 
@@ -136,7 +136,7 @@ ex00〜ex03 の必須ファイルが存在し、全 exercise が `-Wall -Wextra 
 - ファイル生成失敗: 存在しないディレクトリを target にした Shrubbery は `FileOpenException` を throwし、executeForm が捕捉して exit 0。
   - **Evidence/Test Command**:
     ```sh
-    mkdir -p /tmp/Module05_review && cd ~/workspace/42tokyo/cpp-module/cpp-module--ayusa/Module05/ex02 && c++ -Wall -Wextra -Werror -std=c++98 -I. ~/workspace/42tokyo/cpp-module/cpp-module--ayusa/Module05/outputs/artifacts/tests/filefail_ex02.cpp Bureaucrat.cpp AForm.cpp ShrubberyCreationForm.cpp RobotomyRequestForm.cpp PresidentialPardonForm.cpp -o /tmp/Module05_review/filefail_ex02 && /tmp/Module05_review/filefail_ex02; echo exit=$?
+    mkdir -p /tmp/Module05_review && cd ~/42_cpp/Module05/ex02 && c++ -Wall -Wextra -Werror -std=c++98 -I. ~/42_cpp/Module05/outputs/artifacts/tests/filefail_ex02.cpp Bureaucrat.cpp AForm.cpp ShrubberyCreationForm.cpp RobotomyRequestForm.cpp PresidentialPardonForm.cpp -o /tmp/Module05_review/filefail_ex02 && /tmp/Module05_review/filefail_ex02; echo exit=$?
     ```
   - **Observation**: `chief couldn't execute ShrubberyCreationForm because could not open shrubbery file`、`survived file-open failure without crash`、`exit=0`。
 - SIGSEGV/SIGABRT/SIGBUS を生じた入力はなし。
@@ -150,8 +150,8 @@ ex00〜ex03 の必須ファイルが存在し、全 exercise が `-Wall -Wextra 
   2. サンドボックス内では task port 制約により `leaks` がハングしたため停止し、escalated(非サンドボックス)権限で再実行。再実行は 1 秒未満で完了しハングしなかった。
 - **Evidence/Test Command** (macOS では対象プロセスを検査可能な権限で実行):
   ```sh
-  cd ~/workspace/42tokyo/cpp-module/cpp-module--ayusa/Module05/ex03 && make && leaks --atExit -- ./Intern; rm -f garden_shrubbery; make fclean
-  mkdir -p /tmp/Module05_review && cd ~/workspace/42tokyo/cpp-module/cpp-module--ayusa/Module05/ex03 && c++ -Wall -Wextra -Werror -std=c++98 -I. ~/workspace/42tokyo/cpp-module/cpp-module--ayusa/Module05/outputs/artifacts/tests/intern_ex03.cpp Bureaucrat.cpp AForm.cpp ShrubberyCreationForm.cpp RobotomyRequestForm.cpp PresidentialPardonForm.cpp Intern.cpp -o /tmp/Module05_review/intern_ex03 && leaks --atExit -- /tmp/Module05_review/intern_ex03
+  cd ~/42_cpp/Module05/ex03 && make && leaks --atExit -- ./Intern; rm -f garden_shrubbery; make fclean
+  mkdir -p /tmp/Module05_review && cd ~/42_cpp/Module05/ex03 && c++ -Wall -Wextra -Werror -std=c++98 -I. ~/42_cpp/Module05/outputs/artifacts/tests/intern_ex03.cpp Bureaucrat.cpp AForm.cpp ShrubberyCreationForm.cpp RobotomyRequestForm.cpp PresidentialPardonForm.cpp Intern.cpp -o /tmp/Module05_review/intern_ex03 && leaks --atExit -- /tmp/Module05_review/intern_ex03
   ```
 - **Observation**: `./Intern`: `Process 57683: 190 nodes malloced for 31 KB` / `0 leaks for 0 total leaked bytes.`。harness: `Process 57688: 189 nodes malloced for 31 KB` / `0 leaks for 0 total leaked bytes.`。ソース上の `new` は `ex03/Intern.cpp:31,35,39` のみで、main は成功返却 pointer を `ex03/main.cpp:45-47` で delete。
 
@@ -164,12 +164,6 @@ ex00〜ex03 の必須ファイルが存在し、全 exercise が `-Wall -Wextra 
 2. 防御的改善として Shrubbery target のパス検証を検討すること。`ex02/ShrubberyCreationForm.cpp:30` と `ex03/ShrubberyCreationForm.cpp:30` は target をそのままパス接頭辞として使い、絶対パスや `../` による作業ディレクトリ外書き込みを許す。subject の必須要件ではないため FAIL 事由とはしない。
 
 ## Notes (severity-tagged)
-- **[WARN] `make fclean` が `*_shrubbery` を削除しない。** C++ Module 追加監査ルールの「fclean で課題副生成物を削除」に不適合。
-  - Evidence/Test Command:
-    ```sh
-    cd ~/workspace/42tokyo/cpp-module/cpp-module--ayusa/Module05/ex02 && make >/dev/null && ./AForm >/dev/null && ls garden_shrubbery && make fclean >/dev/null && ls garden_shrubbery; rm -f garden_shrubbery
-    ```
-  - Observation: `make fclean` 後も `garden_shrubbery` を `ls` 可能。`ex02/Makefile:23-24` と `ex03/Makefile:23-24` は binary のみ削除。repo に副生成物が commit されていないことは `git ls-files | grep -iE "_shrubbery$"` の一致 0 件で確認。
 - **[INFO] const メンバを持つクラスの copy assignment は mutable state のみコピー。** Bureaucrat は `_grade` (`ex00/Bureaucrat.cpp:13-19`)、Form/AForm は `_signed` (`ex01/Form.cpp:18-22`, `ex02/AForm.cpp:18-22`) のみ。OCF メンバ自体は存在し、const 属性を代入できない C++ の制約に沿う。仕様違反ではない。
 - **[INFO] Makefile は必須フラグに `-pedantic -O3` を追加。** `ex00/Makefile:3` 等。必須フラグを失わず、全ビルド警告 0 のため問題なし。
 - **[INFO] Robotomy は初回のみ `srand(time(NULL))`。** `ex02/RobotomyRequestForm.cpp:8-18`, `ex03/RobotomyRequestForm.cpp:8-18`。`rand()%2` により各実行が 2 分岐で、subject の 50% 要件に沿う。
@@ -181,8 +175,8 @@ N/A (過去レポートなし)。レビュー開始時、`cpp-module--ayusa/Modu
 ## クリーンアップ確認
 - **Evidence/Test Command**:
   ```sh
-  cd ~/workspace/42tokyo/cpp-module/cpp-module--ayusa/Module05 && for d in ex00 ex01 ex02 ex03; do (cd "$d" && make fclean); done
-  find ~/workspace/42tokyo/cpp-module/cpp-module--ayusa/Module05/ex00 ~/workspace/42tokyo/cpp-module/cpp-module--ayusa/Module05/ex01 ~/workspace/42tokyo/cpp-module/cpp-module--ayusa/Module05/ex02 ~/workspace/42tokyo/cpp-module/cpp-module--ayusa/Module05/ex03 -name "*_shrubbery" -delete
+  cd ~/42_cpp/Module05 && for d in ex00 ex01 ex02 ex03; do (cd "$d" && make fclean); done
+  find ~/42_cpp/Module05/ex00 ~/42_cpp/Module05/ex01 ~/42_cpp/Module05/ex02 ~/42_cpp/Module05/ex03 -name "*_shrubbery" -delete
   git -C ~/workspace/42tokyo/cpp-module status --short cpp-module--ayusa/Module05
   ```
 - **Observation**: 各 exercise の binary / `.o` / `.d` / shrubbery 副生成物を除去。レビュー対象既存ソースに変更なし。新規生成物は `cpp-module--ayusa/Module05/outputs/` 以下の report と artifacts/tests のみ。
