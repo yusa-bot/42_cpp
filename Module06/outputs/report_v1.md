@@ -1,7 +1,9 @@
 # CPP Module 06 Review Report (Rubric Based)
-## 【判定】: PASS
+## 【判定】: FAIL
 
-ex00〜ex02 の必須ファイルが存在し、全 exercise が `-Wall -Wextra -Werror -pedantic -std=c++98` で警告なくビルド・実行できた。rubric の Scalar conversion / Retyping of raw data / Real type identification を全て満たす。禁止関数・禁止 STL・C++11 機能・`<typeinfo>` の使用はなく、ex02 の動的確保は 0 leaks。人間レビュアーの最終確認を前提とした総合 PASS 候補。
+**総合判定は FAIL。** 決定的理由: 実際のレビュー環境相当の devcontainer (Linux / libstdc++) で `ex02` が `-Wall -Wextra -Werror -std=c++98` でコンパイルできない (`error: no type named 'bad_cast' in namespace 'std'`、`ex02/Base.cpp:45,51,56`)。これは rubric の Preliminary tests / Prerequisites「必須フラグでコンパイルできること」に対する明確な違反であり、コンパイル不能な exercise は採点対象外 (=FAIL) となる。原因は `std::bad_cast` の宣言元 `<typeinfo>` を include せずに名指ししている点で、当該ヘッダは ex02 で include 禁止のため、宣言の可視化を `<exception>`/`<iostream>` の推移的インクルードに依存している (規格非保証)。ex00・ex01 は機能・境界・非インスタンス化とも問題なく PASS 相当だが、必須 exercise である ex02 のコンパイル失敗により **プロジェクト全体の判定は FAIL** とする。修正要求 1 (`catch (std::bad_cast&)` → `catch (std::exception&)`) の適用で解消可能。
+
+> 補足 (環境の別記): 本レビューの動的テスト・leaks 検査は補助環境 (macOS / Apple clang / libc++) で実施し、そこでは `<exception>` が `<typeinfo>` を推移的に取り込むため ex02 は偶然ビルドできてしまう。判定は権威ある採点環境 (devcontainer / Linux / libstdc++) を基準とする。
 
 ## 禁止関数チェック: PASS
 - **Description**: `*printf` / `*alloc` / `free()` / `using namespace` / `friend` / STL コンテナ・`<algorithm>` / C++11 機能 / `<typeinfo>`・`typeid`(ex02 で明示禁止) の使用有無を検査。
@@ -20,7 +22,7 @@ ex00〜ex02 の必須ファイルが存在し、全 exercise が `-Wall -Wextra 
 
 ### Prerequisites
 - **Description**: `c++ -Wall -Wextra -Werror` かつ C++98 でビルドできるか。各 exercise の `make`, `make re`, `make fclean` を検証。
-- **Status**: PASS
+- **Status**: FAIL
 - **Evidence/Test Command**:
   ```sh
   cd ~/42_cpp/Module06/ex00 && make && make re && make fclean
@@ -28,7 +30,7 @@ ex00〜ex02 の必須ファイルが存在し、全 exercise が `-Wall -Wextra 
   cd ~/42_cpp/Module06/ex02 && make && make re && make fclean
   for h in ex00/ScalarConverter.hpp ex01/Data.hpp ex01/Serializer.hpp ex02/Base.hpp ex02/A.hpp ex02/B.hpp ex02/C.hpp; do cd ~/42_cpp/Module06 && c++ -Wall -Wextra -Werror -std=c++98 -fsyntax-only -x c++ "$h" && echo "OK $h"; done
   ```
-- **Observation**: 全 exercise でビルド exit 0・警告 0。各 Makefile は CXX=`c++`、CXXFLAGS=`-Wall -Wextra -Werror -pedantic -std=c++98` (`ex00/Makefile:2-3`, `ex01/Makefile:3-4`, `ex02/Makefile:3-4`)、`re` は `fclean all` (`ex00/Makefile:24` 他)。ヘッダ 7 本すべて `-fsyntax-only` で単独コンパイル成功 (self-contained + include guard)。
+- **Observation**: **採点環境 (devcontainer / Linux / libstdc++) では `ex02` のビルドが失敗する** (`c++ -Wall -Wextra -Werror -pedantic -std=c++98 -MMD -MP -c Base.cpp -o Base.o` → `Base.cpp:45:25: error: no type named 'bad_cast' in namespace 'std'`、同 51,56 行、計 3 errors、`make: *** [Makefile:17: Base.o] エラー 1`)。ex00・ex01 は同環境で警告 0・exit 0 でビルド可能。各 Makefile は CXX=`c++`、CXXFLAGS=`-Wall -Wextra -Werror -pedantic -std=c++98` (`ex00/Makefile:2-3`, `ex01/Makefile:3-4`, `ex02/Makefile:3-4`)、`re` は `fclean all` (`ex00/Makefile:24` 他)。補助環境 (macOS/libc++) では推移的インクルードにより ex02 も偶然ビルドできるが、判定は採点環境を基準とする。必須 exercise のコンパイル失敗により Prerequisites は FAIL。
 
 ### Forbidden Function
 - **Description**: Forbidden Function フラグ対象の有無。
@@ -79,7 +81,7 @@ ex00〜ex02 の必須ファイルが存在し、全 exercise が `-Wall -Wextra 
 
 ### Real type identification
 - **Description**: Base は public virtual destructor のみ、A/B/C が public 継承、`generate()`/`identify(Base*)`/`identify(Base&)` を実装、`dynamic_cast` で実型判定、`identify(Base*)` は NULL チェック、`identify(Base&)` は try/catch、`<typeinfo>` 不使用を検査。
-- **Status**: PASS
+- **Status**: FAIL
 - **Evidence/Test Command**:
   ```sh
   cd ~/42_cpp/Module06/ex02 && make && ./identify; ./identify; make fclean
@@ -88,11 +90,13 @@ ex00〜ex02 の必須ファイルが存在し、全 exercise が `-Wall -Wextra 
   mkdir -p /tmp/Module06_review && cd ~/42_cpp/Module06/ex02 && c++ -Wall -Wextra -Werror -std=c++98 -I. ~/42_cpp/Module06/outputs/artifacts/tests/edge_ex02.cpp Base.cpp -o /tmp/Module06_review/edge_ex02 && /tmp/Module06_review/edge_ex02; echo exit=$?
   ```
 - **Observation**:
+  - **[FAIL 事由] 採点環境 (devcontainer / Linux / libstdc++) で `ex02` がコンパイル不能。** `make` 時に `Base.cpp:45:25: error: no type named 'bad_cast' in namespace 'std'` (同 51,56 行) が発生し `make: *** [Makefile:17: Base.o] エラー 1` で停止。`std::bad_cast` の宣言元 `<typeinfo>` を include せず名指ししており (`ex02/Base.cpp:45,51,56`)、当該環境の `<exception>`/`<iostream>` が `<typeinfo>` を推移的に取り込まないため未宣言となる。コンパイル不能につき、以下の機能検証は補助環境 (macOS/libc++、推移的インクルードで偶然ビルド可) での参考結果である。
   - Base は public virtual destructor のみ (`ex02/Base.hpp:6-9`)。A/B/C は空クラスで public 継承 (`ex02/A.hpp:6`, `ex02/B.hpp:6`, `ex02/C.hpp:6`)。
   - `generate()` は `rand()%3` で A/B/C を new して Base* を返す (`ex02/Base.cpp:14-29`)。
-  - `identify(Base*)` は `dynamic_cast<T*>(p) != NULL` で判定し NULL チェックを内包 (`ex02/Base.cpp:31-38`)。`identify(Base&)` は `dynamic_cast<T&>` を try/catch (`std::bad_cast`) で判定し、内部でポインタ不使用 (`ex02/Base.cpp:40-58`)。
+  - `identify(Base*)` は `dynamic_cast<T*>(p) != NULL` で判定し NULL チェックを内包 (`ex02/Base.cpp:31-38`)。`identify(Base&)` は `dynamic_cast<T&>` を try/catch (`std::bad_cast`) で判定し、内部でポインタ不使用 (`ex02/Base.cpp:40-58`; catch は `ex02/Base.cpp:45,51,56`)。**ただし `std::bad_cast` の宣言元 `<typeinfo>` を include せず名指ししており、この環境では `<exception>`/`<iostream>` の推移的インクルードで解決されているに過ぎない (Notes [WARN] 参照)。**
   - `<typeinfo>`/`typeid` は一致 0 件。`dynamic_cast` は pointer 版 3 箇所・reference 版 3 箇所で使用。
   - 実行で generate/A/B/C すべて両 identify が実型を正しく出力。edge_ex02 で `identify((Base*)NULL)` がクラッシュせず (`survived NULL pointer`, exit 0)、generate+delete のループも正常。
+  - **[移植性欠陥] `<typeinfo>` を include せず `std::bad_cast` を使用しているため、`<exception>` が `<typeinfo>` を推移的に取り込まない標準ライブラリ実装 (例: 一部の libstdc++/版) では `error: no type named 'bad_cast' in namespace 'std'` でコンパイル失敗する (レビュイーより別環境で再現報告)。当環境 (Apple clang/libc++) では `#include <exception>` 単独で `std::bad_cast` が可視となりビルド成功する。検証: `printf '%s\n' '#include <exception>' 'int main(){ try{}catch(const std::bad_cast&){} return 0; }' > /tmp/t_bc.cpp && c++ -std=c++98 -Wall -Wextra -Werror /tmp/t_bc.cpp -o /dev/null && echo OK`。**
 
 ## 破壊的テスト結果
 - ScalarConverter: `2147483648`/`128`(int overflow・範囲外)、`127`(DEL 非表示)、`1e40`(float 範囲外)、`abc`/空文字/`42abc`(解析不能)で `impossible`/`Non displayable` を正しく出力しクラッシュなし (ex00 の Evidence 参照)。
@@ -102,8 +106,9 @@ ex00〜ex02 の必須ファイルが存在し、全 exercise が `-Wall -Wextra 
 
 ## メモリ検査
 - **Description**: ヒープ確保と解放を検査。`new` は ex02 のみ (`ex02/Base.cpp:23,25,27`)。ex00/ex01 は動的確保なし。
-- **Status**: PASS
-- **採用方針**: macOS Memory Check Policy **方針 B (`leaks --atExit`)**。
+- **Status**: N/A (採点環境で ex02 がコンパイル不能のため検査対象バイナリを生成できない)
+- **Observation (前提)**: 下記 leaks 結果は補助環境 (macOS/libc++、ex02 が偶然ビルドできる) での参考値。採点環境 (devcontainer/Linux) では ex02 のビルド失敗によりメモリ検査自体が実施不能。ex02 のコンパイルが通れば `new`/`delete` の対応 (`ex02/main.cpp:20`) は正しく、参考環境では 0 leaks。
+- **採用方針 (参考環境)**: macOS Memory Check Policy **方針 B (`leaks --atExit`)**。
 - **方針 B の条件確認**:
   1. 対象 `./identify` と保存済み `edge_ex02` harness は stdin を読まず自走完了する専用テスト。
   2. 本 macOS サンドボックス内では `leaks` が task port 制約でハングするため、escalated(非サンドボックス)権限で実行。再実行は 1 秒未満で完了しハングなし。
@@ -119,14 +124,24 @@ ex00〜ex02 の必須ファイルが存在し、全 exercise が `-Wall -Wextra 
 - ex02 の `identify(Base*)` は p が A/B/C いずれにも該当しない(NULL 含む)場合に何も出力しない。subject は A/B/C の表示のみを要求しており、仕様乖離ではない (Notes [INFO] 参照)。
 
 ## 修正要求
-1. (任意・堅牢性) `ex01` の `uintptr_t` は `<stdint.h>` から取得している (`ex01/Serializer.hpp:5`)。C++98 に `<cstdint>` は無いため実務上妥当だが、C++ ヘッダ体裁を統一したい場合は `<cstddef>`/`<cstdint>` 事情を defense で説明できるようにしておくこと。挙動・移植性に問題はなく FAIL 事由ではない。
-2. (任意) `ex02` の乱数 seed は `srand(time(NULL))` を初回一回のみ設定するため (`ex02/Base.cpp:15-20`)、同一秒内の連続実行で generate() の結果が変わらない。評価時に多様性を見せたい場合はseed 方針を説明できるようにしておくこと。
+1. **(必須・移植性) `ex02/Base.cpp` の `catch (const std::bad_cast&)` を `catch (std::exception&)` に変更する (3 箇所: `ex02/Base.cpp:45,51,56`)。** `std::bad_cast` の宣言元 `<typeinfo>` は ex02 で include 禁止のため、名指しすると宣言元を合法的に include できず推移的インクルードに依存する。`std::bad_cast` は `std::exception` 派生なので `catch (std::exception&)` (`<exception>` が確実に宣言) へ置換すれば、どの標準ライブラリ実装でもコンパイル可能。検証: `printf '%s\n' '#include <exception>' 'int main(){ try{}catch(const std::exception&){} return 0; }' > /tmp/t_fix.cpp && c++ -std=c++98 -Wall -Wextra -Werror /tmp/t_fix.cpp -o /dev/null && echo OK`。同 workspace の `cpp-module--fugu/06/ex02/identify.cpp` は既にこの方式を採用。
+2. (任意・堅牢性) `ex01` の `uintptr_t` は `<stdint.h>` から取得している (`ex01/Serializer.hpp:5`)。C++98 に `<cstdint>` は無いため実務上妥当だが、C++ ヘッダ体裁を統一したい場合は `<cstddef>`/`<cstdint>` 事情を defense で説明できるようにしておくこと。挙動・移植性に問題はなく FAIL 事由ではない。
+3. (任意) `ex02` の乱数 seed は `srand(time(NULL))` を初回一回のみ設定するため (`ex02/Base.cpp:15-20`)、同一秒内の連続実行で generate() の結果が変わらない。評価時に多様性を見せたい場合はseed 方針を説明できるようにしておくこと。
 
 ## Notes (severity-tagged)
+- **[CRITICAL] `ex02` が採点環境 (devcontainer / Linux / libstdc++) でコンパイル不能。** `ex02/Base.cpp:45,51,56` の `catch (const std::bad_cast&)` が、宣言元 `<typeinfo>` (ex02 で include 禁止) を include せず名指ししているため、`<exception>`/`<iostream>` が `<typeinfo>` を推移的に取り込まない同環境では `error: no type named 'bad_cast' in namespace 'std'` (3 errors) でビルド失敗 → `make: *** [Makefile:17: Base.o] エラー 1`。rubric Preliminary tests/Prerequisites の「必須フラグでコンパイルできること」に違反し、当該 exercise は採点対象外=FAIL。**これが総合判定 FAIL の直接原因。** 修正要求 1 の `catch (std::exception&)` 置換で解消可能。補助環境 (macOS/libc++) では推移的インクルードにより偶然ビルドできるが、これは環境依存の偶然に過ぎない。
 - **[INFO] `ex01` は `uintptr_t` を `<stdint.h>` から取得。** `ex01/Serializer.hpp:5`。subject が `uintptr_t` を明示要求しており (subject Chapter VI)、C 由来ヘッダの使用は許容範囲。`<cstdint>` は grep で 0 件 (C++11 ヘッダ不使用)。仕様違反ではない。
 - **[INFO] `ex02` の `generate()` は初回のみ seed。** `ex02/Base.cpp:15-20`。subject は "Feel free to use anything you like for the random choice" と明記しており、同一秒連続実行で同結果になっても仕様違反ではない。
 - **[INFO] `ex02` の `identify(Base*)` は該当なし/NULL 時に無出力。** `ex02/Base.cpp:31-38`。subject は A/B/C の表示のみ要求。NULL でもクラッシュしないことを `edge_ex02` で確認済み。
 - **[INFO] Makefile は必須フラグに `-pedantic` を追加。** `ex00/Makefile:3` 他。必須フラグを失わず警告 0 でビルド可能。問題なし。
+
+## Errata
+
+- 訂正の経緯 (3 段階):
+  1. 初稿では、補助環境 (macOS / Apple clang / libc++) でビルド・実行・leaks がすべて通ったため、総合判定を **PASS** とし、`ex02` の `std::bad_cast` 名指しを Notes [INFO]「`<typeinfo>` 不使用で問題なし」と評価していた。
+  2. レビュイーより、`std::bad_cast` を `<typeinfo>` 非 include で名指ししている点について指摘があり、`std::bad_cast` の宣言元が `<typeinfo>` であること、当環境では `<exception>` の推移的インクルードで偶然可視化されているだけであることを確認。移植性欠陥として [INFO] → [WARN] に格上げした (判定は PASS のまま、環境依存の注記を付加)。
+  3. さらにレビュイーより、**実際のレビュー環境相当の devcontainer (Linux / libstdc++) では当該箇所が `error: no type named 'bad_cast' in namespace 'std'` でコンパイル失敗する**ことが報告された。これは rubric Prerequisites (必須フラグでのコンパイル) 違反であり、採点環境では ex02 が採点不能となる。よって当該所見を [WARN] → **[CRITICAL]** に格上げし、Prerequisites と Real type identification の Status を **FAIL**、メモリ検査を **N/A**、総合判定を **FAIL** に改めた。
+- 反省点: 初稿の PASS 判定は、単一の補助環境 (macOS/libc++) のみでビルド確認し、採点環境 (Linux/libstdc++) での検証を欠いたことに起因する。推移的インクルードに依存する識別子 (特に禁止ヘッダ由来のもの) は、複数の標準ライブラリ実装で検証すべきであった。
 
 ## Prior Report Reconciliation
 
@@ -148,12 +163,13 @@ N/A (過去レポートなし)。レビュー開始時、`~/42_cpp/Module06/outp
 1. ex00 で literal の型判定 (char/int/float/double、pseudo-literal) をどの順序・条件で行っているか、`isCharLiteral`/`parseNumber` の分岐を説明してください (`ex00/ScalarConverter.cpp:28-51,139-158`)。
 2. ex00 で char が `impossible`/`Non displayable`/表示の 3 分岐になる条件と、int/float の overflow 判定基準を説明してください (`ex00/ScalarConverter.cpp:91-125`)。
 3. ex01 で `reinterpret_cast` を選び `static_cast` を使わない理由、および `uintptr_t` を介する意義を説明してください (`ex01/Serializer.cpp:4-11`)。
-4. ex02 で `identify(Base*)` は NULL チェック、`identify(Base&)` は try/catch(`std::bad_cast`) と、判定手段を変える理由を説明してください (`ex02/Base.cpp:31-58`)。
+4. ex02 で `std::bad_cast` を `<typeinfo>` 非 include で名指しできている理由 (推移的インクルード) を理解しているか、また別環境でのビルド失敗をどう解消するか (例: `catch (std::exception&)` への変更) を説明してください (`ex02/Base.cpp:45,51,56`)。
 5. ex02 で Base に virtual destructor が必要な理由と、`dynamic_cast` が成立するための多態性条件を説明してください (`ex02/Base.hpp:6-9`)。
 
 ### Supplementary Questions
 - ex00 の float/double 整形 (`setprecision(7)`/`(15)` と `.0` 付与) をどう決めたか (`ex00/ScalarConverter.cpp:67-89`)。
 - ex01 の `<stdint.h>` 使用と C++98 標準の関係を説明できるか。
+- ex02 で `identify(Base*)` は NULL/戻り値、`identify(Base&)` は try/catch と失敗検知手段を変える理由を説明できるか (`ex02/Base.cpp:31-58`)。
 - ex02 の乱数 seed を初回一回に限定した理由と、複数生成時の分布への影響。
 - ex00 でクォート無し 1 文字 (例: `a`) を char literal として扱う設計判断の根拠 (`ex00/ScalarConverter.cpp:33-36`)。
 
