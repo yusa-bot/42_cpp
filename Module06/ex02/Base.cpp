@@ -29,11 +29,11 @@ Base* generate(void) {
 }
 
 void identify(Base* p) {
-    if (dynamic_cast<A*>(p) != NULL)
+    if (dynamic_cast<A*>(p))
         std::cout << "A" << std::endl;
-    else if (dynamic_cast<B*>(p) != NULL)
+    else if (dynamic_cast<B*>(p))
         std::cout << "B" << std::endl;
-    else if (dynamic_cast<C*>(p) != NULL)
+    else if (dynamic_cast<C*>(p))
         std::cout << "C" << std::endl;
 }
 
@@ -42,17 +42,17 @@ void identify(Base& p) {
         (void)dynamic_cast<A&>(p);
         std::cout << "A" << std::endl;
         return;
-    } catch (const std::bad_cast&) {
+    } catch (...) {
     }
     try {
         (void)dynamic_cast<B&>(p);
         std::cout << "B" << std::endl;
         return;
-    } catch (const std::bad_cast&) {
+    } catch (...) {
     }
     try {
         (void)dynamic_cast<C&>(p);
         std::cout << "C" << std::endl;
-    } catch (const std::bad_cast&) {
+    } catch (...) {
     }
 }
