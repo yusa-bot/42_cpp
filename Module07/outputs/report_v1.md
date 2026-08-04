@@ -114,6 +114,16 @@ ex00〜ex02 の必須ファイルが存在し、全 exercise が `-Wall -Wextra 
 ## 破壊的テスト結果
 - ex00: 複合型 `Val` での swap/min/max、等値時の「第 2 引数を返す」挙動を確認 (`ex00_complex`)。クラッシュなし。
 - ex02: 深いコピー/代入の独立性、自己代入、空配列 `[0]`・境界 `[3]` での `std::out_of_range`、サイズ縮小代入を確認 (`ex02_deep`)。クラッシュなし。
+- ex02 (負の個数): `Array(unsigned int n)` に `-1` を渡すと `unsigned int` へ暗黙変換され `UINT_MAX`(4294967295) となる (負値は関数に届かない)。この巨大サイズでも SIGSEGV/UB は発生せず、当環境では遅延割り当てで構築成功 (`constructed, size=4294967295 / survived (no crash / no UB)`)。「負の個数でクラッシュ」は `unsigned int` 指定のため前提が成立しない。
+  - **Evidence/Test Command**:
+    ```sh
+    mkdir -p /tmp/Module07_review && cd ~/42_cpp/Module07 && c++ -Wall -Wextra -Werror -std=c++98 -Iex02 ~/42_cpp/Module07/outputs/artifacts/tests/neg_size_ex02.cpp -o /tmp/Module07_review/neg_size_ex02 && /tmp/Module07_review/neg_size_ex02; echo exit=$?
+    ```
+- ex02 (確保失敗): 確保が本当に不可能な巨大要素型 (64KB/要素 × UINT_MAX) では `new T[n]()` が `std::bad_alloc`(= `std::exception` 派生) を throw し、`catch (std::exception&)` で捕捉可能 (`caught std::exception: std::bad_alloc / no segfault / no UB`)。未割り当てメモリへのアクセスや UB は発生せず、subject「must never access non-allocated memory」に準拠。
+  - **Evidence/Test Command**:
+    ```sh
+    mkdir -p /tmp/Module07_review && cd ~/42_cpp/Module07 && c++ -Wall -Wextra -Werror -std=c++98 -Iex02 ~/42_cpp/Module07/outputs/artifacts/tests/huge_allocation_ex02.cpp -o /tmp/Module07_review/huge_allocation_ex02 && /tmp/Module07_review/huge_allocation_ex02; echo exit=$?
+    ```
 - SIGSEGV/SIGABRT/SIGBUS を誘発した入力はなし。
 
 ## メモリ検査
@@ -136,7 +146,7 @@ ex00〜ex02 の必須ファイルが存在し、全 exercise が `-Wall -Wextra 
 ## 修正要求
 1. (任意・堅牢性) `ex00` の `min`/`max` は `const T&` を返す (`ex00/whatever.hpp:15,20`)。lvalue 同士では問題ないが、一時オブジェクト同士 (`::min(T(1), T(2))`) を渡すと戻り参照が dangling になりうる。subject の用法 (lvalue) では実害なく FAIL 事由ではないが、defense で戻り値の寿命について説明できるようにしておくこと。
 2. (任意) `ex00` の `swap`/`min`/`max` は汎用名のグローバル関数テンプレート。main は `::swap` と修飾して呼んでおり衝突しないが (`ex00/main.cpp:10,18`)、非修飾呼び出しでは ADL により `std::swap` 等と競合しうる点を理解しておくこと。
-3. (任意・堅牢性) `ex02` の `Array(unsigned int n)` は単一引数の変換コンストラクタで、`explicit` 未指定のため `unsigned int`/`int` から `Array<T>` への暗黙変換を許す (`ex02/Array.hpp:17`)。`explicit Array(unsigned int n)` とマークすると、`Array<int> a = 5;` や関数実引数 `f(7)` のような意図しない暗黙変換をコンパイル時に禁止でき、より堅牢になる。subject/rubric は `explicit` を要求しておらず、`ex02/main.cpp` も暗黙変換に依存していない (生成は直接初期化・コピー・代入のみ、`ex02/main.cpp:9-47`) ため FAIL 事由ではなく、後付けしても既存コードは壊れない。検証: `printf '%s\n' '#include "Array.hpp"' 'int main(){ Array<int> a = 5; (void)a; return 0; }' > /tmp/imp.cpp && c++ -Wall -Wextra -Werror -std=c++98 -I/Users/fujiki/workspace/42tokyo/cpp-module/cpp-module--ayusa/Module07/ex02 /tmp/imp.cpp -o /tmp/imp` は現状コンパイル成功 (暗黙変換が通る) が、`explicit` 付与版では `error: no viable conversion from 'int' to 'Array<int>'` となる。
+3. (任意・堅牢性) `ex02` の `Array(unsigned int n)` は単一引数の変換コンストラクタで、`explicit` 未指定のため `unsigned int`/`int` から `Array<T>` への暗黙変換を許す (`ex02/Array.hpp:17`)。`explicit Array(unsigned int n)` とマークすると、`Array<int> a = 5;` や関数実引数 `f(7)` のような意図しない暗黙変換をコンパイル時に禁止でき、より堅牢になる。subject/rubric は `explicit` を要求しておらず、`ex02/main.cpp` も暗黙変換に依存していない (生成は直接初期化・コピー・代入のみ、`ex02/main.cpp:9-47`) ため FAIL 事由ではなく、後付けしても既存コードは壊れない。検証: `printf '%s\n' '#include "Array.hpp"' 'int main(){ Array<int> a = 5; (void)a; return 0; }' > /tmp/imp.cpp && c++ -Wall -Wextra -Werror -std=c++98 -I~/42_cpp/Module07/ex02 /tmp/imp.cpp -o /tmp/imp` は現状コンパイル成功 (暗黙変換が通る) が、`explicit` 付与版では `error: no viable conversion from 'int' to 'Array<int>'` となる。
 
 ## Notes (severity-tagged)
 - **[INFO] `ex00` の `min`/`max` は `const T&` 戻り。** `ex00/whatever.hpp:15-22`。lvalue 用法では安全。一時オブジェクトを渡すと dangling の可能性があるが subject 用法では発生しない。仕様違反ではない。
@@ -147,15 +157,15 @@ ex00〜ex02 の必須ファイルが存在し、全 exercise が `-Wall -Wextra 
 
 ## Prior Report Reconciliation
 
-N/A (過去レポートなし)。レビュー開始時、`cpp-module--ayusa/Module07/outputs` は存在せず、`ls` は `No such file or directory`。本レビューで outputs と artifacts/tests を新規作成した。
+N/A (過去レポートなし)。レビュー開始時、`~/42_cpp/Module07/outputs` は存在せず、`ls` は `No such file or directory`。本レビューで outputs と artifacts/tests を新規作成した。
 
 ## クリーンアップ確認
 - **Evidence/Test Command**:
   ```sh
   cd ~/42_cpp/Module07 && for d in ex00 ex01 ex02; do (cd "$d" && make fclean); done
-  git -C /Users/fujiki/workspace/42tokyo/cpp-module status --short cpp-module--ayusa/Module07
+  git -C ~/workspace/42tokyo/cpp-module status --short 42_cpp/Module07
   ```
-- **Observation**: 各 exercise の binary / `.o` / `.d` を除去。レビュー対象既存ソースに変更なし。新規生成物は `cpp-module--ayusa/Module07/outputs/` 以下の report と artifacts/tests のみ (`git status --short` は `?? outputs/` のみ)。
+- **Observation**: 各 exercise の binary / `.o` / `.d` を除去。レビュー対象既存ソースに変更なし。新規生成物は `~/42_cpp/Module07/outputs/` 以下の report と artifacts/tests のみ (`git status --short` は `?? outputs/` のみ)。
 
 ## レビュイーへの説明要求リスト
 
