@@ -9,6 +9,7 @@ _fn/
 subject/
 memo.md
 todo.txt
+AGENTS.md
 
 # valgrind --leak-check=full --show-leak-kinds=all -q
 # CXXFLAGS = -Wall -Wextra -Werror -pedantic -std=c++98 -fsanitize=address -g
