@@ -28,7 +28,7 @@ Base* generate(void) {
     }
 }
 
-void identify(Base* p) {
+void identify(Base* p) { // アドレスどうし
     if (dynamic_cast<A*>(p))
         std::cout << "A" << std::endl;
     else if (dynamic_cast<B*>(p))
@@ -37,19 +37,23 @@ void identify(Base* p) {
         std::cout << "C" << std::endl;
 }
 
-void identify(Base& p) {
+// 参照は値の別名のため、どこも指していない状態を表せない
+// そのため失敗時、NULLではなく例外を投げる
+void identify(Base& p) { // 値どうし
     try {
         (void)dynamic_cast<A&>(p);
         std::cout << "A" << std::endl;
         return;
     } catch (const std::exception&) {
     }
+
     try {
         (void)dynamic_cast<B&>(p);
         std::cout << "B" << std::endl;
         return;
     } catch (const std::exception&) {
     }
+
     try {
         (void)dynamic_cast<C&>(p);
         std::cout << "C" << std::endl;

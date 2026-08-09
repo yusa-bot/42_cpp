@@ -42,6 +42,7 @@ AForm* Intern::createPresidentialPardonForm(const std::string& target) const {
 AForm* Intern::makeForm(const std::string& formName, const std::string& target) const {
     // Internのメンバ関数で、targetを受け取り、AForm*を返し、Internを変更しないconst関数という型に FormCreator という名前を付けている
     typedef AForm* (Intern::*FormCreator)(const std::string&) const;
+    // Intern::*型
 
     const std::string formNames[] = {
         "shrubbery creation",
