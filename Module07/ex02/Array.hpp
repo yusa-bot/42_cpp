@@ -34,7 +34,7 @@ public:
             return *this;
 
         if (other._size > 0) {
-            newElements = new T[other._size]();
+            newElements = new T[other._size](); // int型等の値を初期化
             try {
                 for (unsigned int index = 0; index < other._size; ++index)
                     newElements[index] = other._elements[index]; // ここではT型のoperator=
