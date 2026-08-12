@@ -16,7 +16,7 @@ private:
 
 public:
     Span();
-    Span(unsigned int capacity);
+    explicit Span(unsigned int capacity);
     Span(const Span& other);
     Span& operator=(const Span& other);
     ~Span();

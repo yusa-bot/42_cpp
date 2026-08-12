@@ -227,7 +227,7 @@
 - 提出テストの出力label（例: `shortest:`）はsubjectの最小sampleと異なるが、subjectは固定UIの完全一致ではなく期待値を示しているため、数値結果`2`と`14`が正しい本実装は要件を満たす。
 
 ## Notes (severity-tagged)
-- **[INFO] `Span(unsigned int)`は`explicit`ではない。** `Span.hpp:19`では整数からの意図しない暗黙変換が可能。subjectは`explicit`を要求しないためFAILではなく、`outputs/artifacts/tests/ex01_span_implicit_harm.cpp`が設計上のriskを記録している。
+- **[GOOD] `Span(unsigned int)`は`explicit`に修正済み。** `Span.hpp:19`。負のコンパイルテスト`outputs/artifacts/tests/ex01_span_implicit_harm.cpp`は、`Span s = 5`と`report(5)`の双方がコンパイルエラーとなることを確認した。
 - **[INFO] range overloadは容量検証前に一時`std::vector<int>`を生成する。** `Span.hpp:28-34`。single-pass input iteratorに対応し、挿入のatomicityを得られる一方、rangeを一時的に複製し、拒否されるrangeでもallocationが起き得る。
 - **[INFO] spanメソッドは`unsigned int`を返す。** `Span.hpp:37-38`。非負距離と整合し、レビュー環境では`INT_MAX - INT_MIN`相当も表現できる。subjectは戻り値型を指定していない。
 - **[INFO] `MutantStack`はprotectedな`std::stack::c`へアクセスする。** `MutantStack.hpp:36-49`。このexerciseにおける通常かつportableな実装方法である。
@@ -254,11 +254,10 @@
 | protected `c`使用は妥当 | INFO | Carried over | `MutantStack.hpp:36-49`。 |
 | reverse iterator非提供 | 要件外 | Dropped from修正要求 | Subject/rubricはforward iteratorによるsample操作のみを要求し、欠陥・修正要求ではないため。 |
 | memory check 0 leaks | PASS | Carried over with updated evidence | 保存済み8秒harnessにPID injection方式で`leaks`を接続し、0 leaks、両exit 0を確認。 |
-| `Span(unsigned int)`の暗黙変換リスク | 旧レポート本文では未掲載（artifactのみ） | Added as INFO | 既存artifact `ex01_span_implicit_harm.cpp`と`Span.hpp:19`を照合。subject/rubric要件ではないためPASSは不変。 |
+| `Span(unsigned int)`の暗黙変換リスク | INFO | Resolved by evidence | `Span.hpp:19`は`explicit Span(unsigned int capacity)`。`ex01_span_implicit_harm.cpp`は`Span s = 5`で`no viable conversion`、`report(5)`で`no matching function`となり、暗黙変換が拒否されることを確認。 |
 
 ## 修正要求
-1. **任意**: `Span(unsigned int capacity)`を`explicit`にすると、`Span s = 5`や`report(5)`のような意図しない暗黙変換をコンパイル時に拒否できる (`Span.hpp:19`; `outputs/artifacts/tests/ex01_span_implicit_harm.cpp`)。
-2. **任意・トレードオフあり**: range版`addNumber`の一時vectorはinput iterator対応とstrong/atomic behaviorを与える。一時コピーのメモリコストを下げるならforward iterator用に`std::distance`で事前検証する別設計が可能だが、single-pass input iteratorを二度走査してはならない (`Span.hpp:26-35`; `outputs/artifacts/tests/ex01_range_input.cpp`)。
+1. **任意・トレードオフあり**: range版`addNumber`の一時vectorはinput iterator対応とstrong/atomic behaviorを与える。一時コピーのメモリコストを下げるならforward iterator用に`std::distance`で事前検証する別設計が可能だが、single-pass input iteratorを二度走査してはならない (`Span.hpp:26-35`; `outputs/artifacts/tests/ex01_range_input.cpp`)。
 
 ## レビュイーへの説明要求リスト
 
@@ -274,7 +273,7 @@
 ### Supplementary Questions
 - const/非constの`easyfind` overloadで戻り値が`iterator`/`const_iterator`に分かれる理由は何ですか。
 - `Span`のcopy assignmentでtemporary vectorを先に作ってからswapする例外安全上の利点は何ですか (`Span.cpp:16-24`)。
-- `Span(unsigned int)`へ`explicit`を付けない場合、どのような暗黙変換が起こり得ますか。
+- `Span(unsigned int)`に`explicit`を付けたことで、`Span s = 5`や`report(5)`が拒否される仕組みを説明してください。
 - `MutantStack`のcopy/assignmentがunderlying containerも独立してコピーする理由を説明してください。
 - Module 08でSTLの利用が許可されるだけでなく推奨・要求される理由をsubjectのmodule-specific rulesに沿って説明してください。
 

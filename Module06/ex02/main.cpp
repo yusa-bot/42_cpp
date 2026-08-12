@@ -7,7 +7,7 @@
 
 static void testIdentification(Base& value) {
     std::cout << "identify(Base*): ";
-    identify(&value);
+    identify(&value); // アドレス
     std::cout << "identify(Base&): ";
     identify(value);
 }
