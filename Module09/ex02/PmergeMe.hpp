@@ -4,7 +4,24 @@
 # include <deque>
 # include <vector>
 
-// Key Point: 
+// Key Point:
+// containerごとにalgorithm, 同一処理は同じに。
+
+//共通化する
+//├── 入力解析
+//├── 時間変換
+//├── Element / Pair / Pending
+//├── 2要素をsmall/largeに分ける処理
+//└── Jacobsthal境界の純粋な数値計算
+
+//コンテナごとに実装する
+//├── Ford–Johnson再帰本体
+//├── main chainの構築
+//├── pendingの構築
+//├── anchor検索
+//├── 二分探索
+//├── 挿入順を保存するコンテナ
+//└── main chainへの挿入
 
 class PmergeMe {
 private:

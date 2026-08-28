@@ -1,5 +1,6 @@
 #include "PmergeMe.hpp"
 
+#include <algorithm>
 #include <climits>
 #include <ctime>
 #include <iomanip>
@@ -15,24 +16,33 @@ namespace {
 
 struct Element {
     int value;
-    std::size_t id;
+    // 各再帰レベルでペアになったsmallを保持する。
+    std::vector<Element *> smalls;
+
+    explicit Element(int initialValue)
+        : value(initialValue), smalls() {
+    }
 };
 
 struct Pair {
-    Element small;
-    Element large;
+    Element *small;
+    Element *large;
 };
 
 struct Pending {
-    Element value; // Pairのsmall
-    std::size_t anchorId; // PairのlargeのID
-    bool hasAnchor; // Pairのlargeの有無
+    Element *small;
+    Element *pairedLarge;
+
+    Pending(Element *pendingSmall, Element *pairedLargeElement)
+        : small(pendingSmall), pairedLarge(pairedLargeElement) {
+    }
 };
 
-Pair makePair(const Element& first, const Element& second) {
+// 大小を判定
+Pair makePair(Element *first, Element *second) {
     Pair pair;
 
-    if (first.value <= second.value) {
+    if (first->value <= second->value) {
         pair.small = first;
         pair.large = second;
     } else {
@@ -40,6 +50,54 @@ Pair makePair(const Element& first, const Element& second) {
         pair.large = first;
     }
     return pair;
+}
+
+struct ElementPointerLess {
+    bool operator()(const Element *left, const Element *right) const {
+        return left->value < right->value;
+    }
+};
+
+typedef std::vector<Pending> PendingItems;
+typedef std::vector<std::size_t> InsertionOrder;
+
+// Jacobsthal順を作る
+// どの順番でmain chainへ挿入するかを添字で生成
+// 境界(挿入グループの最後の番号)でsmallをグループ化し、各グループ内を後ろから挿入
+InsertionOrder makeInsertionOrder(std::size_t count) { // 入力はPendingの個数
+
+    // 次にどのpendingを選ぶか
+    InsertionOrder order;
+    if (count == 0)
+        return order;
+
+    order.reserve(count);
+    // b1はソート済みa1の直前に比較なしで挿入できる。
+    order.push_back(0);
+
+    std::size_t previous = 1;
+    std::size_t current = 3;
+    while (previous < count) {
+        const std::size_t end = current < count ? current : count;
+        for (std::size_t index = end; index > previous; --index)
+            order.push_back(index - 1);
+
+        const std::size_t next = current + 2 * previous;
+        previous = current;
+        current = next;
+    }
+    return order;
+}
+
+// largeからその再帰階層のsmallを取り出し、Pendingを作成
+Pending takePending(Element *large) {
+    if (large->smalls.empty())
+        throw std::logic_error("Ford-Johnson small element was not found");
+
+    // 比較関係は再帰が深くなるにつれて末尾へ追加 -> 再帰から戻る順番はその逆なのでback
+    Element *small = large->smalls.back();
+    large->smalls.pop_back();
+    return Pending(small, large);
 }
 
 int parsePositiveInteger(const char *text) {
@@ -78,164 +136,70 @@ double elapsedMicroseconds(std::clock_t start, std::clock_t finish) {
 // container1: std::vector
 // --------------------------------------------------------------------------
 
-typedef std::vector<Element> VectorElements;
-typedef std::vector<Pair> VectorPairs;
-typedef std::vector<Pending> VectorPending;
-typedef std::vector<std::size_t> VectorOrder;
+typedef std::vector<Element> VectorNodes;
+typedef std::vector<Element *> VectorElements;
 
-void fillVector(int argc, char **argv, VectorElements& values) {
-    values.reserve(static_cast<std::size_t>(argc - 1));
+// 各整数を Element にする
+void fillVector(int argc, char **argv, VectorNodes& nodes,
+                VectorElements& values) {
+    const std::size_t count = static_cast<std::size_t>(argc - 1);
+    nodes.reserve(count);
+    values.reserve(count);
 
-    for (int index = 1; index < argc; ++index) {
-        Element element;
-        element.value = parsePositiveInteger(argv[index]);
-        element.id = static_cast<std::size_t>(index - 1);
-        values.push_back(element);
-    }
+    for (int index = 1; index < argc; ++index)
+        nodes.push_back(Element(parsePositiveInteger(argv[index])));
+    for (VectorNodes::iterator it = nodes.begin(); it != nodes.end(); ++it)
+        values.push_back(&*it);
 }
 
-// --------------- fordJohnsonVector ---------------
-
-VectorOrder vectorInsertionOrder(std::size_t count) {
-    VectorOrder order; // pending の添字を保存するvector
-    if (count == 0)
-        return order;
-
-    order.reserve(count);
-    order.push_back(0);
-    std::size_t previous = 1;
-    std::size_t current = 3;
-    while (previous < count) {
-        const std::size_t end = current < count ? current : count;
-        for (std::size_t index = end; index > previous; --index)
-            order.push_back(index - 1);
-        const std::size_t next = current + 2 * previous;
-        previous = current;
-        current = next;
-    }
-    return order;
-}
-
-std::size_t vectorAnchorIndex(const VectorElements& chain,
-                              std::size_t anchorId) {
-    for (std::size_t index = 0; index < chain.size(); ++index) {
-        if (chain[index].id == anchorId)
-            return index;
-    }
-    throw std::logic_error("Ford-Johnson anchor was not found");
-}
-
-std::size_t vectorLowerBound(const VectorElements& chain,
-                             std::size_t end, int value) {
-    std::size_t first = 0;
-    while (first < end) {
-        const std::size_t middle = first + (end - first) / 2;
-        if (chain[middle].value < value)
-            first = middle + 1;
-        else
-            end = middle;
-    }
-    return first;
-}
-
-
-// ex.)  0:3 1:5 2:9 3:7 4:4
-void fordJohnsonVector(VectorElements& values, std::size_t totalCount) {
-    // 再帰の出口
+void fordJohnsonVector(VectorElements& values) {
     if (values.size() < 2)
         return;
 
-    // 奇数個の場合unpairedを取得 -> unpairedElement
     const bool hasUnpairedElement = values.size() % 2 != 0;
-    Element unpairedElement;
-    if (hasUnpairedElement)
-        unpairedElement = values.back(); // ex.) 4:4
+    Element *unpairedElement = hasUnpairedElement ? values.back() : 0;
 
+    VectorElements larges;
+    larges.reserve(values.size() / 2);
+    for (std::size_t index = 0; index + 1 < values.size(); index += 2) {
+        const Pair pair = makePair(values[index], values[index + 1]);
+        pair.large->smalls.push_back(pair.small);
+        larges.push_back(pair.large);
+    }
 
-    // ----------- 再帰内処理 -----------
-    // 数字を2つづつのペアに -> pairs ex.) S0:3/L1:5, S3:7/L2:9
-    VectorPairs pairs;
-    pairs.reserve(values.size() / 2);
-    for (std::size_t index = 0; index + 1 < values.size(); index += 2)
-        pairs.push_back(makePair(values[index], values[index + 1]));
-
-    // 大きい要素を再帰的にソートする。IDによってペアの対応関係を維持する
-    VectorElements mainChain;
+    // 再帰
+    fordJohnsonVector(larges);
+    VectorElements mainChain(larges);
     mainChain.reserve(values.size());
 
-    // pairForLargeIdの目的: 再帰ソートで順番が変わってもペア関係を復元できる, IDからペア番号を O(1) で取得できる
-    std::vector<std::size_t> pairForLargeId(totalCount, totalCount);
-    // ↑要素数と初期値を指定するコンストラクタ ex.) [5, 5, 5, 5, 5]
+    PendingItems pending;
+    pending.reserve(larges.size() + (hasUnpairedElement ? 1 : 0));
+    for (VectorElements::iterator it = larges.begin();
+         it != larges.end(); ++it)
+        pending.push_back(takePending(*it));
+    if (hasUnpairedElement)
+        pending.push_back(Pending(unpairedElement, 0));
 
-    // largeを取り出す
-    for (std::size_t index = 0; index < pairs.size(); ++index) {
-        mainChain.push_back(pairs[index].large); // ex.) 1:5, 2:9
-        // pairのlargeのidの箇所に、pairsのidを記録 -> pairsを記録でき、
-        pairForLargeId[pairs[index].large.id] = index; // ex.) 1に0, 2に1
-    }
+    const InsertionOrder order = makeInsertionOrder(pending.size());
+    mainChain.insert(mainChain.begin(), pending[0].small);
 
-    // pairsのlargeのみで再帰
-    fordJohnsonVector(mainChain, totalCount);
-
-    // -> 今度は呼び出し元へ戻りながらsmallを挿入していく
-
-
-
-    // ソートされた大きい要素の順番に合わせて、小さい要素を並べる
-    // ペアにならなかった要素は、探索範囲に上限がない最後の挿入候補にする
-
-
-
-    // ------ pending作成 ------
-    // pending: 今のmainChainに挿入するsmallの数字の並びを保持
-    VectorPending pending;
-    pending.reserve(pairs.size() + (hasUnpairedElement ? 1 : 0));
-
-    // ソート済みのlargeに対応するsmallを並べる
-    for (std::size_t index = 0; index < mainChain.size(); ++index) {
-
-        // Pair ID を取得
-         const std::size_t pairIndex = pairForLargeId[mainChain[index].id];
-        if (pairIndex == totalCount)
-            throw std::logic_error("Ford-Johnson pair was not found");
-
-        Pending item;
-        item.value = pairs[pairIndex].small;
-        item.anchorId = pairs[pairIndex].large.id;
-        item.hasAnchor = true;
-        // -> Pairのlargeより前にsmallを挿入可能に
-
-        pending.push_back(item);
-    }
-
-    if (hasUnpairedElement) {
-        Pending item;
-        item.value = unpairedElement;
-        item.anchorId = 0; // dummy
-        item.hasAnchor = false;
-        pending.push_back(item);
-    }
-    // ------ pending完成 ------
-
-
-    // 完成した pending をJacobsthal順で取り出し、mainChain の適切な位置へ挿入する処理
-    // ex.) mainChain: 1:5, 2:9 / pending: 0:3, 1:7, 2:4
-
-    const VectorOrder order = vectorInsertionOrder(pending.size());
-
-    for (std::size_t index = 0; index < order.size(); ++index) {
+    // 次のpendingを選ぶ
+    for (std::size_t index = 1; index < order.size(); ++index) {
         const Pending& item = pending[order[index]];
+        VectorElements::iterator bound = mainChain.end();
+        if (item.pairedLarge != 0) {
+            bound = std::find(mainChain.begin(), mainChain.end(),
+                              item.pairedLarge);
+            if (bound == mainChain.end())
+                throw std::logic_error(
+                    "Ford-Johnson paired large was not found");
+        }
 
-        const std::size_t end = item.hasAnchor
-            ? vectorAnchorIndex(mainChain, item.anchorId)
-            : mainChain.size();
-
-        const std::size_t position =
-            vectorLowerBound(mainChain, end, item.value.value);
-        mainChain.insert(mainChain.begin() + position, item.value);
+        // lower_bound: 指定値(ここでは挿入値)以上になる最初の位置を返す標準アルゴリズム
+        const VectorElements::iterator position = std::lower_bound(
+            mainChain.begin(), bound, item.small, ElementPointerLess());
+        mainChain.insert(position, item.small);
     }
-
-    // result return
     values.swap(mainChain);
 }
 
@@ -244,118 +208,69 @@ void copyVectorResult(const VectorElements& source,
     destination.reserve(source.size());
     for (VectorElements::const_iterator it = source.begin();
          it != source.end(); ++it)
-        destination.push_back(it->value);
+        destination.push_back((*it)->value);
 }
 
 // --------------------------------------------------------------------------
 // container2: std::deque
 // --------------------------------------------------------------------------
 
-typedef std::deque<Element> DequeElements;
-typedef std::deque<Pair> DequePairs;
-typedef std::deque<Pending> DequePending;
-typedef std::deque<std::size_t> DequeOrder;
+typedef std::deque<Element> DequeNodes;
+typedef std::deque<Element *> DequeElements;
 
-void fillDeque(int argc, char **argv, DequeElements& values) {
-    for (int index = 1; index < argc; ++index) {
-        Element element;
-        element.value = parsePositiveInteger(argv[index]);
-        element.id = static_cast<std::size_t>(index - 1);
-        values.push_back(element);
-    }
+void fillDeque(int argc, char **argv, DequeNodes& nodes,
+               DequeElements& values) {
+    for (int index = 1; index < argc; ++index)
+        nodes.push_back(Element(parsePositiveInteger(argv[index])));
+    for (DequeNodes::iterator it = nodes.begin(); it != nodes.end(); ++it)
+        values.push_back(&*it);
 }
 
-std::size_t dequeLowerBound(const DequeElements& chain,
-                            std::size_t end, int value) {
-    std::size_t first = 0;
-    while (first < end) {
-        const std::size_t middle = first + (end - first) / 2;
-        if (chain[middle].value < value)
-            first = middle + 1;
-        else
-            end = middle;
-    }
-    return first;
-}
-
-std::size_t dequeAnchorIndex(const DequeElements& chain,
-                             std::size_t anchorId) {
-    for (std::size_t index = 0; index < chain.size(); ++index) {
-        if (chain[index].id == anchorId)
-            return index;
-    }
-    throw std::logic_error("Ford-Johnson anchor was not found");
-}
-
-DequeOrder dequeInsertionOrder(std::size_t count) {
-    DequeOrder order;
-    if (count == 0)
-        return order;
-
-    order.push_back(0);
-    std::size_t previous = 1;
-    std::size_t current = 3;
-    while (previous < count) {
-        const std::size_t end = current < count ? current : count;
-        for (std::size_t index = end; index > previous; --index)
-            order.push_back(index - 1);
-        const std::size_t next = current + 2 * previous;
-        previous = current;
-        current = next;
-    }
-    return order;
-}
-
-void fordJohnsonDeque(DequeElements& values, std::size_t totalCount) {
+void fordJohnsonDeque(DequeElements& values) {
     if (values.size() < 2)
         return;
 
-    // 共通のテンプレート関数は使わず、vector版と同じ処理をdeque用に実装する
     const bool hasUnpairedElement = values.size() % 2 != 0;
-    Element unpairedElement;
+    Element *unpairedElement = hasUnpairedElement ? values.back() : 0;
+
+    DequeElements larges;
+    for (std::size_t index = 0; index + 1 < values.size(); index += 2) {
+        const Pair pair = makePair(values[index], values[index + 1]);
+        pair.large->smalls.push_back(pair.small);
+        larges.push_back(pair.large);
+    }
+
+    // 再帰
+    fordJohnsonDeque(larges);
+    DequeElements mainChain(larges);
+
+    PendingItems pending;
+    pending.reserve(larges.size() + (hasUnpairedElement ? 1 : 0));
+    for (DequeElements::iterator it = larges.begin();
+         it != larges.end(); ++it)
+        pending.push_back(takePending(*it));
     if (hasUnpairedElement)
-        unpairedElement = values.back();
+        pending.push_back(Pending(unpairedElement, 0));
 
-    DequePairs pairs;
-    for (std::size_t index = 0; index + 1 < values.size(); index += 2)
-        pairs.push_back(makePair(values[index], values[index + 1]));
+    const InsertionOrder order = makeInsertionOrder(pending.size());
+    mainChain.insert(mainChain.begin(), pending[0].small);
 
-    DequeElements mainChain;
-    std::deque<std::size_t> pairForLargeId(totalCount, totalCount);
-    for (std::size_t index = 0; index < pairs.size(); ++index) {
-        mainChain.push_back(pairs[index].large);
-        pairForLargeId[pairs[index].large.id] = index;
-    }
-    fordJohnsonDeque(mainChain, totalCount);
-
-    DequePending pending;
-    for (std::size_t index = 0; index < mainChain.size(); ++index) {
-        const std::size_t pairIndex = pairForLargeId[mainChain[index].id];
-        if (pairIndex == totalCount)
-            throw std::logic_error("Ford-Johnson pair was not found");
-        Pending item;
-        item.value = pairs[pairIndex].small;
-        item.anchorId = pairs[pairIndex].large.id;
-        item.hasAnchor = true;
-        pending.push_back(item);
-    }
-    if (hasUnpairedElement) {
-        Pending item;
-        item.value = unpairedElement;
-        item.anchorId = 0;
-        item.hasAnchor = false;
-        pending.push_back(item);
-    }
-
-    const DequeOrder order = dequeInsertionOrder(pending.size());
-    for (std::size_t index = 0; index < order.size(); ++index) {
+    // 次のpendingを選ぶ
+    for (std::size_t index = 1; index < order.size(); ++index) {
         const Pending& item = pending[order[index]];
-        const std::size_t end = item.hasAnchor
-            ? dequeAnchorIndex(mainChain, item.anchorId)
-            : mainChain.size();
-        const std::size_t position =
-            dequeLowerBound(mainChain, end, item.value.value);
-        mainChain.insert(mainChain.begin() + position, item.value);
+        DequeElements::iterator bound = mainChain.end();
+        if (item.pairedLarge != 0) {
+            bound = std::find(mainChain.begin(), mainChain.end(),
+                              item.pairedLarge);
+            if (bound == mainChain.end())
+                throw std::logic_error(
+                    "Ford-Johnson paired large was not found");
+        }
+
+        // main chainのどこへ挿入するか (pairedLargeより前のみ探索)
+        const DequeElements::iterator position = std::lower_bound(
+            mainChain.begin(), bound, item.small, ElementPointerLess());
+        mainChain.insert(position, item.small);
     }
     values.swap(mainChain);
 }
@@ -364,7 +279,7 @@ void copyDequeResult(const DequeElements& source,
                      std::deque<int>& destination) {
     for (DequeElements::const_iterator it = source.begin();
          it != source.end(); ++it)
-        destination.push_back(it->value);
+        destination.push_back((*it)->value);
 }
 
 void printVector(const std::string& label,
@@ -438,11 +353,12 @@ void PmergeMe::process(int argc, char **argv) {
     // ------ container1: vector ------
     const std::clock_t vectorStart = std::clock();
 
+    VectorNodes vectorNodes;
     VectorElements vectorValues;
     std::vector<int> vectorResult;
 
-    fillVector(argc, argv, vectorValues);
-    fordJohnsonVector(vectorValues, vectorValues.size());
+    fillVector(argc, argv, vectorNodes, vectorValues);
+    fordJohnsonVector(vectorValues);
     copyVectorResult(vectorValues, vectorResult);
 
     const std::clock_t vectorFinish = std::clock();
@@ -450,13 +366,19 @@ void PmergeMe::process(int argc, char **argv) {
     // ------ container2: deque ------
     const std::clock_t dequeStart = std::clock();
 
+    DequeNodes dequeNodes;
     DequeElements dequeValues;
     std::deque<int> dequeResult;
-    fillDeque(argc, argv, dequeValues);
-    fordJohnsonDeque(dequeValues, dequeValues.size());
+    fillDeque(argc, argv, dequeNodes, dequeValues);
+    fordJohnsonDeque(dequeValues);
     copyDequeResult(dequeValues, dequeResult);
 
     const std::clock_t dequeFinish = std::clock();
+
+    if (vectorResult.size() != dequeResult.size()
+        || !std::equal(vectorResult.begin(), vectorResult.end(),
+                       dequeResult.begin()))
+        throw std::logic_error("container results do not match");
 
     // ------ ------
     _before.swap(before);
@@ -483,3 +405,19 @@ void PmergeMe::display() const {
     std::cout.flags(previousFlags);
     std::cout.precision(previousPrecision);
 }
+
+// 「何番目のpendingを挿入するか」は共通化し、「そのコンテナへどう挿入するか」は個別実装
+
+//共通
+//├── Element / Pair / Pending
+//├── smallとlargeの対応管理
+//├── makePair()
+//├── Jacobsthal挿入順
+//└── Pending用vector
+
+//コンテナ固有
+//├── 要素・large・main chain
+//├── 再帰処理
+//├── pairedLarge探索
+//├── lower_bound
+//└── main chainへの挿入
