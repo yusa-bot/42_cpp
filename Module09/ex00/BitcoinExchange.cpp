@@ -144,8 +144,8 @@ void BitcoinExchange::processFile(const std::string& filename) const {
 
     if (!file.is_open())
         throw std::runtime_error("could not open input file");
-    if (!std::getline(file, line))
-        return;
+    if (!std::getline(file, line) || trim(line) != "date | value")
+        throw std::runtime_error("invalid input header");
 
     while (std::getline(file, line)) {
         const std::string originalLine = line;
