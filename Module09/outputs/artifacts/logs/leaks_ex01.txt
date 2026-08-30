@@ -1,0 +1,27 @@
+Process 76788 is not debuggable. Due to security restrictions, leaks can only show or save contents of readonly memory of restricted processes.
+
+Process:         memory_ex01 [76788]
+Path:            /Users/USER/*/memory_ex01
+Load Address:    0x1003bc000
+Identifier:      memory_ex01
+Version:         0
+Code Type:       ARM64
+Platform:        macOS
+Parent Process:  zsh [76787]
+Target Type:     live task
+
+Date/Time:       2026-08-29 21:34:03.297 +0900
+Launch Time:     2026-08-29 21:34:02.279 +0900
+OS Version:      macOS 26.6.2 (25G83)
+Report Version:  7
+Analysis Tool:   /usr/bin/leaks
+
+Physical footprint:         976K
+Physical footprint (peak):  976K
+Idle exit:                  untracked
+----
+
+leaks Report Version: 4.0
+Process 76788: 183 nodes malloced for 11 KB
+Process 76788: 0 leaks for 0 total leaked bytes.
+
