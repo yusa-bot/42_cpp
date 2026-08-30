@@ -1,12 +1,13 @@
 #ifndef RPN_HPP
 # define RPN_HPP
 
+# include <list>
 # include <stack>
 # include <string>
 
 class RPN {
 private:
-    std::stack<int> _values;
+    std::stack<int, std::list<int> > _values;
 
     static bool isOperator(char token);
     void applyOperator(char token);
