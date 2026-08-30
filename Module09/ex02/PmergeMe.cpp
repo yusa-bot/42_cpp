@@ -370,17 +370,18 @@ void PmergeMe::process(int argc, char **argv) {
     DequeElements dequeValues;
     std::deque<int> dequeResult;
     fillDeque(argc, argv, dequeNodes, dequeValues);
+
     fordJohnsonDeque(dequeValues);
     copyDequeResult(dequeValues, dequeResult);
 
     const std::clock_t dequeFinish = std::clock();
+
 
     if (vectorResult.size() != dequeResult.size()
         || !std::equal(vectorResult.begin(), vectorResult.end(),
                        dequeResult.begin()))
         throw std::logic_error("container results do not match");
 
-    // ------ ------
     _before.swap(before);
     _vectorResult.swap(vectorResult);
     _dequeResult.swap(dequeResult);
@@ -406,18 +407,4 @@ void PmergeMe::display() const {
     std::cout.precision(previousPrecision);
 }
 
-// 「何番目のpendingを挿入するか」は共通化し、「そのコンテナへどう挿入するか」は個別実装
 
-//共通
-//├── Element / Pair / Pending
-//├── smallとlargeの対応管理
-//├── makePair()
-//├── Jacobsthal挿入順
-//└── Pending用vector
-
-//コンテナ固有
-//├── 要素・large・main chain
-//├── 再帰処理
-//├── pairedLarge探索
-//├── lower_bound
-//└── main chainへの挿入
