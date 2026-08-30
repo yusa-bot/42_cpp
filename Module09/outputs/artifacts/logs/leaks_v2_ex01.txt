@@ -1,0 +1,27 @@
+Process 39711 is not debuggable. Due to security restrictions, leaks can only show or save contents of readonly memory of restricted processes.
+
+Process:         memory_v2_ex01 [39711]
+Path:            /Users/USER/*/memory_v2_ex01
+Load Address:    0x104b44000
+Identifier:      memory_v2_ex01
+Version:         0
+Code Type:       ARM64
+Platform:        macOS
+Parent Process:  zsh [39710]
+Target Type:     live task
+
+Date/Time:       2026-08-30 11:27:54.842 +0900
+Launch Time:     2026-08-30 11:27:53.821 +0900
+OS Version:      macOS 26.6.2 (25G83)
+Report Version:  7
+Analysis Tool:   /usr/bin/leaks
+
+Physical footprint:         960K
+Physical footprint (peak):  992K
+Idle exit:                  untracked
+----
+
+leaks Report Version: 4.0
+Process 39711: 183 nodes malloced for 11 KB
+Process 39711: 0 leaks for 0 total leaked bytes.
+
