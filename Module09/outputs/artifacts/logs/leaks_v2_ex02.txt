@@ -1,0 +1,27 @@
+Process 39765 is not debuggable. Due to security restrictions, leaks can only show or save contents of readonly memory of restricted processes.
+
+Process:         memory_v2_ex02 [39765]
+Path:            /Users/USER/*/memory_v2_ex02
+Load Address:    0x1009f0000
+Identifier:      memory_v2_ex02
+Version:         0
+Code Type:       ARM64
+Platform:        macOS
+Parent Process:  zsh [39764]
+Target Type:     live task
+
+Date/Time:       2026-08-30 11:27:59.156 +0900
+Launch Time:     2026-08-30 11:27:58.130 +0900
+OS Version:      macOS 26.6.2 (25G83)
+Report Version:  7
+Analysis Tool:   /usr/bin/leaks
+
+Physical footprint:         1008K
+Physical footprint (peak):  1008K
+Idle exit:                  untracked
+----
+
+leaks Report Version: 4.0
+Process 39765: 183 nodes malloced for 11 KB
+Process 39765: 0 leaks for 0 total leaked bytes.
+
